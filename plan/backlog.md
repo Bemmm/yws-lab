@@ -284,13 +284,13 @@ Links: blocks YWSLAB-31
 
 Cover Telegram sign-in, private plans, public links, shared methodologist cohort, module edits, assessments, import and denied access.
 
-### YWSLAB-30 · story · `backlog` — Review accessibility, security and performance
+### YWSLAB-30 · story · `done` — Review accessibility, security and performance
 
 Check keyboard and screen reader flows, mobile layouts, authorization boundaries, privacy, input handling and expected data load.
 
 Links: blocks YWSLAB-31
 
-#### YWSLAB-65 · test · `todo` — Run accessibility, security and performance review
+#### YWSLAB-65 · test · `done` — Run accessibility, security and performance review
 
 Check keyboard/screen reader/mobile, authorization/privacy, 200-exercise editor, 2000-pose search and 100-student cohort against spec targets.
 

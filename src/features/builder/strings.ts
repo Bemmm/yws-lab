@@ -2,7 +2,7 @@
 
 import { useLocale, useT } from "@/i18n/client";
 import { format } from "@/i18n/format";
-import { asanaParts } from "./asana-manifest";
+import { asanaParts } from "./asana-parts";
 
 /** Builder strings come straight from the app dictionary (`builder.*`, same key shape as Papaya's workoutBuilder). */
 export function useStrings() {

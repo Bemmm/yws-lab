@@ -6,7 +6,9 @@
  * into a single literal-union (TS2590 — "union too complex").
  */
 
-export type AsanaLevel = 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6' | 'Other'
+import type { AsanaLevel } from './asana-parts'
+
+export { asanaParts, type AsanaLevel } from './asana-parts'
 
 export type Asana = {
   id: string
@@ -1282,10 +1284,4 @@ const BY_ID = new Map<string, Asana>(ASANAS.map((a) => [a.id, a]))
 /** Catalog lookup by stable id (e.g. `L1/frame-1973.svg`). */
 export function getAsana(id: string): Asana | undefined {
   return BY_ID.get(id)
-}
-
-/** Level and frame number parsed from the id, for localized alt text. */
-export function asanaParts(id: string): { level: AsanaLevel; frame: string } {
-  const m = /^(L[1-6]|Other)\/frame-(\d+)\.svg$/.exec(id)
-  return { level: (m?.[1] as AsanaLevel | undefined) ?? 'Other', frame: m?.[2] ?? '' }
 }
