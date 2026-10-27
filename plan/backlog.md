@@ -210,7 +210,7 @@ Let whitelisted methodologists create a shared YWS-Lab cohort, select distinct n
 
 Links: blocks YWSLAB-26; blocks YWSLAB-34
 
-#### YWSLAB-55 · backend · `todo` — Implement shared cohort and module configuration
+#### YWSLAB-55 · backend · `done` — Implement shared cohort and module configuration
 
 Methodologists select unique module numbers 1–12, add later, remove only unscored modules; optimistic concurrency prevents one editor overwriting another.
 
@@ -224,7 +224,7 @@ Enter 0–10 scores for the 16 competencies at Point 0, each configured module, 
 
 Links: blocks YWSLAB-27
 
-#### YWSLAB-57 · backend · `todo` — Implement atomic assessment writes
+#### YWSLAB-57 · backend · `done` — Implement atomic assessment writes
 
 Validate 16 stable competencies, 0–10 or empty, configured stage order and versions; audit changes without logging private scores.
 
@@ -232,13 +232,13 @@ Validate 16 stable competencies, 0–10 or empty, configured stage order and ver
 
 Slider plus numeric input, prior score hint, K/16, Save/Cancel, unsaved-exit prompt, outage retry and stale-stage handling.
 
-### YWSLAB-27 · story · `backlog` — Calculate levels and growth
+### YWSLAB-27 · story · `done` — Calculate levels and growth
 
 Implement overall/group averages, stage deltas and dynamics labels exactly as approved spec defines; verify with deterministic examples.
 
 Links: blocks YWSLAB-28
 
-#### YWSLAB-59 · test · `todo` — Verify score calculations and boundary cases
+#### YWSLAB-59 · test · `done` — Verify score calculations and boundary cases
 
 Unit fixtures for complete/partial stages, group means, Point 0 gain, 0.3/1.5 thresholds, -2 competency decline and displayed rounding.
 
