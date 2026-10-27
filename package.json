@@ -15,7 +15,8 @@
     "test": "vitest run",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "node scripts/migrate.mjs"
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:seed-demo": "tsx --conditions=react-server scripts/seed-demo.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -38,6 +39,7 @@
     "eslint": "9.39.0",
     "eslint-config-next": "16.4.3",
     "tailwindcss": "4.3.3",
+    "tsx": "4.23.15",
     "typescript": "5.9.3",
     "vite": "7.3.7",
     "vitest": "4.0.18"
