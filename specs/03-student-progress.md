@@ -69,7 +69,7 @@ Calculate from stored integer scores; round **only for display** to one decimal.
 | Competency change from Point 0 | Current value minus Point 0 score, when both exist. |
 | Competency change from prior scored stage | Current value minus nearest earlier score for that competency. |
 
-Show signed changes, including +, 0 and −. Use text and symbols as well as color. A student with no complete stage has no level; partial-stage scores still appear in the detailed history.
+When a competency's latest score is its Point 0 score, it has no change from Point 0 (shown as —, not 0) and does not count towards the per-competency group mean gain. Show signed changes, including +, 0 and −. Use text and symbols as well as color. A student with no complete stage has no level; partial-stage scores still appear in the detailed history.
 
 **Dynamics:** compare the last two complete stages; Δ is their unrounded level difference. Check rules in order:
 1. If Point 0 is incomplete: “Point 0 incomplete.”
