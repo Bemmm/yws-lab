@@ -32,6 +32,8 @@ export function formatLevel(value: number | null, locale: string, dash = "—"):
 
 /** "+1,5" / "0" / "−0,3" */
 export function formatGain(value: number, locale: string): string {
+  // A non-zero change that rounds to 0.0 keeps the sign of the unrounded value, so the display never contradicts the label.
+  if (value !== 0 && roundOneDecimal(value) === 0) return localizeDecimal(value > 0 ? "+0.0" : "−0.0", locale);
   return localizeDecimal(formatSignedOneDecimal(value), locale);
 }
 

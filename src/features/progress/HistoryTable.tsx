@@ -39,7 +39,9 @@ export function HistoryTable({ view, t, locale }: { view: StudentProgressView; t
         <caption className="p-visually-hidden">{t.student.historyTitle}</caption>
         <thead>
           <tr>
-            <th scope="col" />
+            <th scope="col">
+              <span className="p-visually-hidden">{t.student.competency}</span>
+            </th>
             {stages.map((s) => (
               <th key={s.stage} scope="col">
                 {stageLabel(t, s.stage)}

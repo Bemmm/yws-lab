@@ -818,3 +818,10 @@ export async function moduleScoreCounts(
       .sort((a, b) => a.moduleNumber - b.moduleNumber),
   );
 }
+
+/** Cohort an enrollment belongs to (for server-side ownership checks of id-only actions), or null. */
+export async function enrollmentCohortId(enrollmentId: string): Promise<string | null> {
+  if (!S.setStartingProfileSchema.shape.enrollmentId.safeParse(enrollmentId).success) return null;
+  const [row] = await getDb().select({ c: enrollment.cohortId }).from(enrollment).where(eq(enrollment.id, enrollmentId));
+  return row?.c ?? null;
+}

@@ -43,6 +43,8 @@ function lockedText(t: PT, a: StageAvailability): string | null {
   }
 }
 
+const BACK = "\u0000back";
+
 type Banner = { kind: "conflict" } | { kind: "network" } | { kind: "error"; text: string } | null;
 
 export function AssessmentForm({
@@ -94,7 +96,7 @@ export function AssessmentForm({
     setBanner(null);
     setSavedMsg(false);
     try {
-      const r = await saveStageAction(enrollmentId, stage, toPayload(draft), version);
+      const r = await saveStageAction(cohortId, enrollmentId, stage, toPayload(draft), version);
       if (r.ok) {
         setBase(toDraft(r.value.scores));
         setVersion(r.value.version);
@@ -116,12 +118,14 @@ export function AssessmentForm({
     } finally {
       setSaving(false);
     }
-  }, [draft, enrollmentId, stage, t, version]);
+  }, [draft, cohortId, enrollmentId, stage, t, version]);
 
   const navigate = useCallback(
     (href: string) => {
       leaving.current = true;
-      router.push(href);
+      // Browser Back: step over the sentinel entry pushed by the guard as well.
+      if (href === BACK) window.history.go(-2);
+      else router.push(href);
     },
     [router],
   );
@@ -143,6 +147,19 @@ export function AssessmentForm({
     };
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [dirty]);
+
+  // Browser Back: keep a sentinel history entry while dirty; popping it re-arms the guard and asks first.
+  useEffect(() => {
+    if (!dirty) return;
+    window.history.pushState({ ywsGuard: true }, "", window.location.href);
+    const onPop = () => {
+      if (leaving.current) return;
+      window.history.pushState({ ywsGuard: true }, "", window.location.href);
+      setGuard({ href: BACK });
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
   }, [dirty]);
 
   // In-app link clicks (nav rail, back links) while there are unsaved edits.

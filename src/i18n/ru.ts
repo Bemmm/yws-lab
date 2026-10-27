@@ -271,6 +271,7 @@ export const ru: Dictionary = {
       rowTotal: "Общий уровень",
       rowBasic: "Уровень: базовые",
       rowSystem: "Уровень: системные",
+      competency: "Компетенция",
       trend: "Динамика",
       trendAlt: "{label}: {values}",
       trendNone: "{label}: оценок пока нет",

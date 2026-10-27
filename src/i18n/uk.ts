@@ -269,6 +269,7 @@ export const uk = {
       rowTotal: "Загальний рівень",
       rowBasic: "Рівень: базові",
       rowSystem: "Рівень: системні",
+      competency: "Компетенція",
       trend: "Динаміка",
       trendAlt: "{label}: {values}",
       trendNone: "{label}: оцінок ще немає",

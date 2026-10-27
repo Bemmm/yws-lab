@@ -141,8 +141,8 @@ export default async function StudentPage({
                       group={g}
                       label={t.competency[c.code]}
                       value={cp.currentValue}
-                      fromStart={cp.changeFromPoint0 ?? undefined}
-                      fromPrev={cp.changeFromPrior ?? undefined}
+                      fromStart={cp.changeFromPoint0}
+                      fromPrev={cp.changeFromPrior}
                       fromStartLabel={t.student.fromStart}
                       fromPrevLabel={t.student.fromPrev}
                       emptyLabel={t.unassessed}

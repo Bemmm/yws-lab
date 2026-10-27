@@ -36,7 +36,7 @@ export function EnrollmentControls({
   const saveProfile = () =>
     start(async () => {
       try {
-        const r = await setStartingProfileAction(enrollmentId, value);
+        const r = await setStartingProfileAction(cohortId, enrollmentId, value);
         if (r.ok) {
           setEditing(false);
           setMsg({ ok: true, text: t.student.profileSaved });
@@ -50,7 +50,7 @@ export function EnrollmentControls({
   const toggleArchive = () =>
     start(async () => {
       try {
-        const r = await (archived ? restoreEnrollmentAction(enrollmentId) : archiveEnrollmentAction(enrollmentId));
+        const r = await (archived ? restoreEnrollmentAction(cohortId, enrollmentId) : archiveEnrollmentAction(cohortId, enrollmentId));
         if (r.ok) {
           setConfirm(false);
           if (archived) router.refresh();

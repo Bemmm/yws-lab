@@ -5,9 +5,15 @@
  * (non-methodologists get notFound(), same as a missing page); inputs are validated by the service's zod schemas.
  * Never log arguments or results: they contain names and scores.
  */
+import { notFound } from "next/navigation";
 import { requireMethodologist } from "@/server/auth/session";
 import * as svc from "@/server/progress/service";
 import type { StartingProfile } from "@/server/progress/service";
+
+/** The enrollment must belong to the given cohort, else 404 (non-disclosing). */
+async function assertInCohort(cohortId: string, enrollmentId: string) {
+  if ((await svc.enrollmentCohortId(enrollmentId)) !== cohortId) notFound();
+}
 
 export async function createCohortAction(input: { name: string; startDate?: string | null; endDate?: string | null }) {
   const me = await requireMethodologist();
@@ -36,18 +42,21 @@ export async function enrollAction(input: {
   return svc.enroll(input, me.id);
 }
 
-export async function setStartingProfileAction(enrollmentId: string, startingProfile: StartingProfile) {
+export async function setStartingProfileAction(cohortId: string, enrollmentId: string, startingProfile: StartingProfile) {
   const me = await requireMethodologist();
+  await assertInCohort(cohortId, enrollmentId);
   return svc.setStartingProfile(enrollmentId, startingProfile, me.id);
 }
 
-export async function archiveEnrollmentAction(enrollmentId: string) {
+export async function archiveEnrollmentAction(cohortId: string, enrollmentId: string) {
   const me = await requireMethodologist();
+  await assertInCohort(cohortId, enrollmentId);
   return svc.archiveEnrollment(enrollmentId, me.id);
 }
 
-export async function restoreEnrollmentAction(enrollmentId: string) {
+export async function restoreEnrollmentAction(cohortId: string, enrollmentId: string) {
   const me = await requireMethodologist();
+  await assertInCohort(cohortId, enrollmentId);
   return svc.restoreEnrollment(enrollmentId, me.id);
 }
 
@@ -60,17 +69,20 @@ export async function getOverviewAction(
   return svc.getCohortOverview(cohortId, filters);
 }
 
-export async function getStageFormAction(enrollmentId: string, stage: string) {
+export async function getStageFormAction(cohortId: string, enrollmentId: string, stage: string) {
   await requireMethodologist();
+  await assertInCohort(cohortId, enrollmentId);
   return svc.getStageForm(enrollmentId, stage);
 }
 
 export async function saveStageAction(
+  cohortId: string,
   enrollmentId: string,
   stage: string,
   scores: Record<string, number | null>,
   expectedVersion: number,
 ) {
   const me = await requireMethodologist();
+  await assertInCohort(cohortId, enrollmentId);
   return svc.saveStage(enrollmentId, stage, scores, expectedVersion, me.id);
 }

@@ -84,12 +84,12 @@ describe("progress server actions: access", () => {
       () => actions.setModulesAction(cohortId, [1, 2, 3], 1),
       () => actions.searchStudentsAction("a"),
       () => actions.enrollAction({ cohortId, student: { newStudent: { displayName: "it-ui-nope" } }, startingProfile: "polishing" }),
-      () => actions.setStartingProfileAction(id, "reframing"),
-      () => actions.archiveEnrollmentAction(id),
-      () => actions.restoreEnrollmentAction(id),
+      () => actions.setStartingProfileAction(cohortId, id, "reframing"),
+      () => actions.archiveEnrollmentAction(cohortId, id),
+      () => actions.restoreEnrollmentAction(cohortId, id),
       () => actions.getOverviewAction(cohortId),
-      () => actions.getStageFormAction(id, "point0"),
-      () => actions.saveStageAction(id, "point0", full(5), 0),
+      () => actions.getStageFormAction(cohortId, id, "point0"),
+      () => actions.saveStageAction(cohortId, id, "point0", full(5), 0),
     ];
     for (const call of calls) await expect(call()).rejects.toThrow("NEXT_NOT_FOUND");
     const rows = await sql`select 1 from student where display_name = 'it-ui-nope'`;
@@ -134,7 +134,7 @@ describe("progress server actions: methodologist", () => {
       const r = await actions.enrollAction({ cohortId, student: { newStudent: { displayName } }, startingProfile: "reframing" });
       expect(r.ok).toBe(true);
       if (!r.ok) return;
-      const s = await actions.saveStageAction(r.value.id, "point0", full(score), 0);
+      const s = await actions.saveStageAction(cohortId, r.value.id, "point0", full(score), 0);
       expect(s.ok).toBe(true);
     }
     const o = await actions.getOverviewAction(cohortId);
@@ -157,8 +157,21 @@ describe("progress server actions: methodologist", () => {
     const dup = await actions.enrollAction({ cohortId, student: { studentId: first.studentId }, startingProfile: "polishing" });
     expect(dup.ok).toBe(false);
     if (!dup.ok) expect(dup.error.code).toBe("already_enrolled");
-    const stale = await actions.saveStageAction(first.enrollmentId, "point0", full(6), 0);
+    const stale = await actions.saveStageAction(cohortId, first.enrollmentId, "point0", full(6), 0);
     expect(stale.ok).toBe(false);
     if (!stale.ok) expect(stale.error.code).toBe("stage_conflict");
+  });
+
+  it("id-only actions 404 when the enrollment belongs to another cohort", async () => {
+    const o = await actions.getOverviewAction(cohortId);
+    if (!o.ok) throw new Error("overview");
+    const enr = o.value.cards[0]!.enrollmentId;
+    const other = await svc.createCohort({ name: `it-ui-${crypto.randomUUID().slice(0, 8)}`, modules: [1] }, methId);
+    if (!other.ok) throw new Error("cohort");
+    await expect(actions.saveStageAction(other.value.id, enr, "point0", full(1), 0)).rejects.toThrow("NEXT_NOT_FOUND");
+    await expect(actions.getStageFormAction(other.value.id, enr, "point0")).rejects.toThrow("NEXT_NOT_FOUND");
+    await expect(actions.archiveEnrollmentAction(other.value.id, enr)).rejects.toThrow("NEXT_NOT_FOUND");
+    await expect(actions.setStartingProfileAction(other.value.id, enr, "polishing")).rejects.toThrow("NEXT_NOT_FOUND");
+    await expect(actions.getStageFormAction(cohortId, enr, "point0")).resolves.toMatchObject({ ok: true });
   });
 });

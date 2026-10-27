@@ -13,7 +13,9 @@ describe("format", () => {
     expect(formatLevel(6.25, "uk")).toBe("6,3");
     expect(formatLevel(null, "uk")).toBe("—");
     expect(formatGain(-0.3, "ru")).toBe("−0,3");
-    expect(formatGain(0.04, "ru")).toBe("0");
+    expect(formatGain(0.04, "ru")).toBe("+0,0");
+    expect(formatGain(-0.04, "uk")).toBe("−0,0");
+    expect(formatGain(0, "uk")).toBe("0");
   });
   it("labels stages and statuses", () => {
     expect(stageLabel(uk.progress, "m3")).toBe("Модуль 3");
