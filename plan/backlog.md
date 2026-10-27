@@ -124,79 +124,81 @@ Document stable internal IDs, Telegram subject separation, export schema and mig
 
 Deliver saved yoga training plans for every signed-in account, based on the adapted builder specification.
 
-### YWSLAB-21 · story · `backlog` — Create and manage plans
+### YWSLAB-21 · story · `done` — Create and manage plans
 
 List, search, create, rename, duplicate and delete owned plans; handle empty, validation and permission states.
 
 Links: blocks YWSLAB-22
 
-#### YWSLAB-44 · backend · `todo` — Implement private plan library API
+#### YWSLAB-44 · backend · `done` — Implement private plan library API
 
 Owner-scoped create/list/search/duplicate/delete with validation, pagination and no cross-owner leaks.
 
-#### YWSLAB-45 · frontend · `todo` — Build plan library screen
+#### YWSLAB-45 · frontend · `done` — Build plan library screen
 
 Show list, summary, search, empty/no-match states and actions on desktop/mobile per blueprints.
 
-### YWSLAB-22 · story · `backlog` — Build structured plan editor
+### YWSLAB-22 · story · `done` — Build structured plan editor
 
 Edit sections, ordered exercises, time or breaths, notes and custom exercises; enforce approved limits and keyboard/touch controls.
 
 Links: blocks YWSLAB-23; blocks YWSLAB-33
 
-#### YWSLAB-46 · backend · `todo` — Implement section and exercise mutations
+#### YWSLAB-46 · backend · `done` — Implement section and exercise mutations
 
 Validate 20 sections/200 exercises, duration or breaths, notes and order; make move/duplicate/remove atomic.
 
-#### YWSLAB-47 · frontend · `todo` — Build responsive plan editor
+#### YWSLAB-47 · frontend · `done` — Build responsive plan editor
 
 Inline title/description, section/exercise cards, catalog insertion, custom entries, drag and accessible move actions on desktop/mobile.
 
-### YWSLAB-23 · story · `backlog` — Add reliable autosave and conflict handling
+### YWSLAB-23 · story · `done` — Add reliable autosave and conflict handling
 
 Persist edits without a save button; show status, retry failures and prevent stale windows from overwriting newer versions.
 
 Links: blocks YWSLAB-29
 
-#### YWSLAB-48 · backend · `todo` — Add versioned plan saves
+#### YWSLAB-48 · backend · `done` — Add versioned plan saves
 
 Conditional version checks reject stale writes; deletion and retry are idempotent; no partial reorder persisted.
 
-#### YWSLAB-49 · frontend · `todo` — Build save, retry and conflict states
+#### YWSLAB-49 · frontend · `done` — Build save, retry and conflict states
 
 Show saving/saved/error; retain pending edits offline; refresh on focus; handle stale/deleted plan without silent overwrite.
 
-### YWSLAB-24 · story · `backlog` — Build plan preview
+### YWSLAB-24 · story · `done` — Build plan preview
 
 Render readable plan details and duration summary on mobile and desktop; include print behavior if retained by approved spec.
 
-#### YWSLAB-50 · frontend · `todo` — Build shared plan renderer and print styles
+#### YWSLAB-50 · frontend · `done` — Build shared plan renderer and print styles
 
 Owner preview and public view use same readable renderer; print hides controls and remains readable at 375 px.
 
-### YWSLAB-32 · story · `backlog` — Provide curated pose catalog
+### YWSLAB-32 · story · `done` — Provide curated pose catalog
 
 Provide a curated shared pose catalog with stable IDs, localized names, difficulty, search/filter, licensed images and text fallback. Content rights for app/share/print are a release gate.
 
-#### YWSLAB-51 · analysis · `todo` — Prepare licensed pose catalog data
+#### YWSLAB-51 · analysis · `done` — Prepare licensed pose catalog data
 
 Define stable pose IDs, localized names, difficulty and image rights. Import content only after school confirms rights for app/share/print.
 
-#### YWSLAB-52 · frontend · `todo` — Build catalog search and filter panel
+Note: asanas imported in bootstrap (1,239 school-owned SVGs in `public/asanas`, manifest in `src/features/builder/asana-manifest.ts`). Names/difficulty are out of scope for 1.0 per spec 02.
+
+#### YWSLAB-52 · frontend · `done` — Build catalog search and filter panel
 
 Search displayed name, filter difficulty, show 60 then more, support click/add and mobile bottom sheet; missing image falls back to name.
 
-### YWSLAB-33 · story · `backlog` — Share and print plans
+### YWSLAB-33 · story · `done` — Share and print plans
 
 Provide one revocable read-only public link for a nonempty plan, generic invalid state, responsive anonymous page and browser print output; no student/course or private account data.
 
 Links: blocks YWSLAB-29
 
-#### YWSLAB-53 · backend · `todo` — Implement secret share links and revocation
+#### YWSLAB-53 · backend · `done` — Implement secret share links and revocation
 
 One active high-entropy token per nonempty plan; store hash, block cache/index/leakage, revoke immediately, return generic invalid state.
 
-#### YWSLAB-54 · frontend · `todo` — Build link management and public page
+#### YWSLAB-54 · frontend · `done` — Build link management and public page
 
 Create/copy/revoke dialog, anonymous read-only page and invalid-link state; no owner or course metadata.
 
