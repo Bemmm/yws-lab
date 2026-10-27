@@ -6,43 +6,43 @@ Imported from Tasksurf on 2026-10-27. IDs keep their Tasksurf keys. Status: `tod
 
 Single planned release for the standalone YWS-Lab app. Exit criteria: approved YWS-Lab specs, design system, Telegram sign-in, account-wide workout builder, methodologist-only student progress, data setup/migration, accessibility, security, testing and deployment. Scope details follow the adapted specs; no coding begins before the work plan is complete.
 
-## YWSLAB-2 · epic · `todo` — Product specification and release scope
+## YWSLAB-2 · epic · `done` — Product specification and release scope
 
 Turn imported Papaya documents into YWS-Lab specifications before implementation. Resolve standalone app boundaries, roles, data ownership, and Release 1.0 acceptance criteria.
 
-### YWSLAB-3 · story · `backlog` — Adapt workout builder specification
+### YWSLAB-3 · story · `done` — Adapt workout builder specification
 
 Use the imported PAP-8 baseline. Decide catalog, sharing, print, language and exercise rules; remove Papaya scheduling and student-account assumptions; define acceptance criteria.
 
-### YWSLAB-9 · story · `backlog` — Adapt student progress specification
+### YWSLAB-9 · story · `done` — Adapt student progress specification
 
 Use PAP-101 baseline. Define five-module stages, 16 competencies, methodologist-only access, roster and data-entry rules; write YWS-Lab acceptance criteria.
 
-### YWSLAB-10 · story · `backlog` — Specify sign-in, roles, data and future integration
+### YWSLAB-10 · story · `done` — Specify sign-in, roles, data and future integration
 
 Define Telegram code flow, account lifecycle, whitelist administration, data model, import, future platform boundary and operational needs.
 
-### YWSLAB-11 · story · `backlog` — Freeze Release 1.0 scope and acceptance plan
+### YWSLAB-11 · story · `done` — Freeze Release 1.0 scope and acceptance plan
 
 Release 1.0 scope, specs, design system, engineering breakdown, dependency links and acceptance matrix are recorded. Implementation inputs (credentials, catalog rights, source sheets, hosting) are tracked in delivery stories.
 
 Links: blocks YWSLAB-16
 
-## YWSLAB-4 · epic · `todo` — Design system and product UX
+## YWSLAB-4 · epic · `done` — Design system and product UX
 
 Build YWS-Lab visual language from supplied references, then specify responsive and accessible screens for both modules.
 
-### YWSLAB-12 · story · `backlog` — Audit references and select logo
+### YWSLAB-12 · story · `done` — Audit references and select logo
 
 Extract reusable visual principles from the supplied screenshots. Compare both logo variants against chosen backgrounds and select one. Record rationale.
 
-### YWSLAB-13 · story · `backlog` — Create design tokens and component system
+### YWSLAB-13 · story · `done` — Create design tokens and component system
 
 Define typography, color, spacing, surfaces, states, icons and controls; document contrast, focus, errors and empty/loading states.
 
 Links: blocks YWSLAB-14; blocks YWSLAB-15
 
-### YWSLAB-14 · story · `backlog` — Design workout builder flows
+### YWSLAB-14 · story · `done` — Design workout builder flows
 
 Design plan list, editor, save/conflict behavior and preview for desktop and mobile, including approved catalog or sharing.
 
@@ -50,11 +50,11 @@ Design plan list, editor, save/conflict behavior and preview for desktop and mob
 
 Design course overview, roster, assessments, competency trends and restricted-access states for desktop and mobile.
 
-## YWSLAB-5 · epic · `todo` — App foundation, identity and data
+## YWSLAB-5 · epic · `done` — App foundation, identity and data
 
 Create the standalone app foundation, secure Telegram sign-in, authorization and persistence with a documented integration boundary.
 
-### YWSLAB-16 · story · `backlog` — Set up app, quality gates and environments
+### YWSLAB-16 · story · `done` — Set up app, quality gates and environments
 
 Choose stack from requirements; initialize repo, config, migrations, local development, CI and environments; keep secrets out of source control.
 
@@ -98,7 +98,7 @@ Persist grants/revocations with audit actor/time; enforce role on every progress
 
 Verify regular accounts cannot access progress through navigation, direct URL or API; verify plan ownership and whitelist revocation.
 
-### YWSLAB-19 · story · `backlog` — Implement persistent data model and migrations
+### YWSLAB-19 · story · `done` — Implement persistent data model and migrations
 
 Store accounts, roles, plans, courses, shared cohorts, selected cohort modules, teacher-student roster records, enrollments, assessments and audit history. Keep roster records separate from login accounts; version schema and define backups.
 
@@ -120,7 +120,7 @@ Define stable identity and data assumptions plus an export path so standalone YW
 
 Document stable internal IDs, Telegram subject separation, export schema and migration boundary; no dependency on unfinished platform in 1.0.
 
-## YWSLAB-6 · epic · `todo` — Workout builder
+## YWSLAB-6 · epic · `done` — Workout builder
 
 Deliver saved yoga training plans for every signed-in account, based on the adapted builder specification.
 
@@ -202,7 +202,7 @@ One active high-entropy token per nonempty plan; store hash, block cache/index/l
 
 Create/copy/revoke dialog, anonymous read-only page and invalid-link state; no owner or course metadata.
 
-## YWSLAB-7 · epic · `todo` — Student course progress
+## YWSLAB-7 · epic · `done` — Student course progress
 
 Give whitelisted methodologists a private view of each student's progress through the YWS-Lab teacher course.
 
@@ -302,7 +302,7 @@ Set up production deployment, backups, monitoring/error visibility, rollback pat
 
 Production config, migration, error monitoring, restricted backups, restore test, rollback rehearsal and operator runbook.
 
-#### YWSLAB-68 · subtask · `todo` — Remove temporary design references before release
+#### YWSLAB-68 · subtask · `done` — Remove temporary design references before release (none were ever committed to this repo)
 
 After final UI validation, remove the local references/ screenshots as requested; verify they were never committed or deployed. Keep the design audit and decisions in Tasksurf.
 
