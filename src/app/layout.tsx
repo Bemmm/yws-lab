@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
-import { Onest } from "next/font/google";
+import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { I18nProvider } from "@/i18n/client";
 import { getDictionary, getLocale } from "@/i18n/server";
 import "@/styles/globals.css";
 
-const onest = Onest({
-  subsets: ["latin", "cyrillic"],
+// Self-hosted Onest (variable, 100–900) so builds never depend on Google Fonts.
+const onest = localFont({
+  src: [
+    { path: "./fonts/onest-latin-wght-normal.woff2", weight: "100 900", style: "normal" },
+    { path: "./fonts/onest-latin-ext-wght-normal.woff2", weight: "100 900", style: "normal" },
+    { path: "./fonts/onest-cyrillic-wght-normal.woff2", weight: "100 900", style: "normal" },
+    { path: "./fonts/onest-cyrillic-ext-wght-normal.woff2", weight: "100 900", style: "normal" },
+  ],
   variable: "--font-onest",
   display: "swap",
 });
