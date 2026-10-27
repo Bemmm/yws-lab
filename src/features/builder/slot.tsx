@@ -172,6 +172,11 @@ function FilledSlot({
     : {
         ...dragAttributes,
         ...dragListeners,
+        // dnd-kit's keyboard sensor would swallow Enter/Space from the nested clear/move/side buttons (preventDefault
+        // on keydown cancels their click); only start a keyboard drag when the handle itself has focus.
+        onKeyDown: (e: React.KeyboardEvent) => {
+          if (e.target === e.currentTarget) dragListeners?.onKeyDown?.(e);
+        },
         // dnd-kit defaults to role="button", which may not contain the nested clear/move/side controls (axe: nested-interactive).
         role: "group",
         "aria-label": `${position}: ${alt}`,

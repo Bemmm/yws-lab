@@ -80,7 +80,7 @@ export function PreviewClient({
             {app.name}
           </span>
         ) : (
-          <Link href={backHref} className="y-btn y-btn-ghost y-btn-sm shrink-0">
+          <Link href={backHref} aria-label={tx.back} className="y-btn y-btn-ghost y-btn-sm shrink-0">
             <ArrowLeftIcon size={16} />
             <span className="hidden sm:inline">{tx.back}</span>
           </Link>

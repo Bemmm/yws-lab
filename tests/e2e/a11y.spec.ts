@@ -10,6 +10,8 @@ const uid = () => Math.random().toString(36).slice(2, 8);
 async function audit(page: Page, testInfo: TestInfo, name: string) {
   await page.waitForLoadState("networkidle");
   await page.evaluate(() => document.fonts.ready);
+  // Next streams metadata into <head> for dynamic pages; give it a moment before judging the document title.
+  await expect.poll(() => page.title(), { timeout: 5_000, message: `document.title on ${name}` }).not.toBe("").catch(() => {});
   await page.screenshot({ path: `test-results/screens/${testInfo.project.name}__${name}.png`, fullPage: true });
   const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
   const blocking = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
@@ -20,8 +22,9 @@ async function audit(page: Page, testInfo: TestInfo, name: string) {
       contentType: "application/json",
     });
   }
+  const head = blocking.some((v) => v.id === "document-title") ? `\nhead: ${(await page.locator("head").innerHTML()).slice(0, 600)}` : "";
   const summary = blocking.map((v) => `${v.id} (${v.impact}): ${v.help}\n  ${v.nodes.map((n) => n.target.join(" ")).join("\n  ")}`);
-  expect(summary, `axe violations on ${name}`).toEqual([]);
+  expect(summary.join("\n") + head, `axe violations on ${name}`).toBe("");
 }
 
 test.describe("accessibility and screenshots", () => {
