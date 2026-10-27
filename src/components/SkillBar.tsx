@@ -6,8 +6,9 @@ export interface SkillBarProps {
   group?: CompetencyGroup;
   value?: number | null;
   display?: React.ReactNode;
-  fromStart?: number;
-  fromPrev?: number;
+  /** undefined = not applicable (nothing rendered); null = no change available (renders an em dash). */
+  fromStart?: number | null;
+  fromPrev?: number | null;
   fromStartLabel?: string;
   fromPrevLabel?: string;
   emptyLabel?: string;
@@ -37,19 +38,18 @@ export function SkillBar({
   const has = value != null;
   const filled = has ? Math.max(0, Math.min(10, Math.round(value))) : 0;
   const deltas: React.ReactNode[] = [];
-  if (fromStart != null) {
+  const delta = (key: string, v: number | null | undefined, l?: string) => {
+    if (v === undefined) return;
     deltas.push(
-      <span key="s" className={deltaClass(fromStart)}>
-        {[sign(fromStart), fromStartLabel].filter(Boolean).join(" ")}
+      <span key={key} className={v === null ? "y-delta-zero" : deltaClass(v)}>
+        {[v === null ? "—" : sign(v), l].filter(Boolean).join(" ")}
       </span>,
     );
-  }
-  if (fromPrev != null) {
-    deltas.push(
-      <span key="p" className={deltaClass(fromPrev)}>
-        {[sign(fromPrev), fromPrevLabel].filter(Boolean).join(" ")}
-      </span>,
-    );
+  };
+  // Only a competency that has a value shows deltas; a missing change is "—", not nothing.
+  if (has) {
+    delta("s", fromStart, fromStartLabel);
+    delta("p", fromPrev, fromPrevLabel);
   }
   const text = typeof label === "string" ? label : "";
   return (

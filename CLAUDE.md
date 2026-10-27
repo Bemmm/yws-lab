@@ -63,5 +63,6 @@ tests/              integration + e2e
 npm run dev          # local dev (needs DATABASE_URL)
 npm run db:generate  # create a migration from schema changes
 npm run db:migrate   # apply migrations
+npm run db:seed-demo # demo cohort "Демо-потік" (local/staging only; refuses NODE_ENV=production)
 npm run check        # lint + typecheck + test + build — must pass before a PR
 ```

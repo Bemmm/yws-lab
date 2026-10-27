@@ -46,7 +46,7 @@ Links: blocks YWSLAB-14; blocks YWSLAB-15
 
 Design plan list, editor, save/conflict behavior and preview for desktop and mobile, including approved catalog or sharing.
 
-### YWSLAB-15 · story · `backlog` — Design methodologist progress flows
+### YWSLAB-15 · story · `done` — Design methodologist progress flows
 
 Design course overview, roster, assessments, competency trends and restricted-access states for desktop and mobile.
 
@@ -206,7 +206,7 @@ Create/copy/revoke dialog, anonymous read-only page and invalid-link state; no o
 
 Give whitelisted methodologists a private view of each student's progress through the YWS-Lab teacher course.
 
-### YWSLAB-25 · story · `backlog` — Manage course and student roster
+### YWSLAB-25 · story · `done` — Manage course and student roster
 
 Let whitelisted methodologists create a shared YWS-Lab cohort, select distinct numbered modules 1–12 (initially or later), and jointly manage its teacher-student roster and starting profiles. Unscored modules may be removed; scored modules retain assessments. Teacher-students are roster records, not app roles.
 
@@ -216,11 +216,11 @@ Links: blocks YWSLAB-26; blocks YWSLAB-34
 
 Methodologists select unique module numbers 1–12, add later, remove only unscored modules; optimistic concurrency prevents one editor overwriting another.
 
-#### YWSLAB-56 · frontend · `todo` — Build cohort, module and roster management
+#### YWSLAB-56 · frontend · `done` — Build cohort, module and roster management
 
 Shared cohort selector, Manage modules, create/find/enroll teacher-students, starting profiles, archive state and duplicate messages.
 
-### YWSLAB-26 · story · `backlog` — Record stage competency assessments
+### YWSLAB-26 · story · `done` — Record stage competency assessments
 
 Enter 0–10 scores for the 16 competencies at Point 0, each configured module, and Final. Unconfigured modules have no assessment stage. Apply stage-entry, partial-score, conflict and shared-methodologist rules from the adapted spec.
 
@@ -230,7 +230,7 @@ Links: blocks YWSLAB-27
 
 Validate 16 stable competencies, 0–10 or empty, configured stage order and versions; audit changes without logging private scores.
 
-#### YWSLAB-58 · frontend · `todo` — Build assessment form and conflict flow
+#### YWSLAB-58 · frontend · `done` — Build assessment form and conflict flow
 
 Slider plus numeric input, prior score hint, K/16, Save/Cancel, unsaved-exit prompt, outage retry and stale-stage handling.
 
@@ -244,17 +244,17 @@ Links: blocks YWSLAB-28
 
 Unit fixtures for complete/partial stages, group means, Point 0 gain, 0.3/1.5 thresholds, -2 competency decline and displayed rounding.
 
-### YWSLAB-28 · story · `backlog` — Show student and group progress
+### YWSLAB-28 · story · `done` — Show student and group progress
 
 Provide student detail, competency scales and history plus group overview/filtering; keep private data inaccessible to other accounts.
 
 Links: blocks YWSLAB-29
 
-#### YWSLAB-60 · frontend · `todo` — Build cohort overview and group summary
+#### YWSLAB-60 · frontend · `done` — Build cohort overview and group summary
 
 Alphabetical cards, dynamics counts, stage completion and competency average denominators; filters do not alter whole-cohort summary.
 
-#### YWSLAB-61 · frontend · `todo` — Build student profile and stage history
+#### YWSLAB-61 · frontend · `done` — Build student profile and stage history
 
 16 scales, signed changes, selected-module columns, partial/empty states, common 0–10 charts and sticky labels on mobile.
 

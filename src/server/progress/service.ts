@@ -779,3 +779,49 @@ export async function getStudentProgress(enrollmentId: string): Promise<Result<S
     };
   });
 }
+
+/** Archived enrollments of a cohort (alphabetical) so they can be opened and restored. No score data. */
+export async function listArchivedEnrollments(
+  cohortId: string,
+): Promise<Result<{ enrollmentId: string; displayName: string }[]>> {
+  const p = parse(S.updateCohortSchema.pick({ cohortId: true }), { cohortId });
+  if (!p.ok) return p;
+  const rows = await getDb()
+    .select({ id: enrollment.id, displayName: student.displayName })
+    .from(enrollment)
+    .innerJoin(student, eq(enrollment.studentId, student.id))
+    .where(and(eq(enrollment.cohortId, cohortId), sql`${enrollment.archivedAt} is not null`));
+  return ok(rows.map((r) => ({ id: r.id, displayName: r.displayName })).sort(byName).map((r) => ({ enrollmentId: r.id, displayName: r.displayName })));
+}
+
+/** Per selected module: how many scores / students carry them (those modules cannot be removed). */
+export async function moduleScoreCounts(
+  cohortId: string,
+): Promise<Result<{ moduleNumber: number; students: number; scores: number }[]>> {
+  const p = parse(S.updateCohortSchema.pick({ cohortId: true }), { cohortId });
+  if (!p.ok) return p;
+  const rows = await getDb()
+    .select({
+      stage: assessmentStage.stage,
+      students: sql<number>`count(distinct ${assessmentStage.enrollmentId})::int`,
+      scores: sql<number>`count(*)::int`,
+    })
+    .from(assessmentScore)
+    .innerJoin(assessmentStage, eq(assessmentScore.stageId, assessmentStage.id))
+    .innerJoin(enrollment, eq(assessmentStage.enrollmentId, enrollment.id))
+    .where(eq(enrollment.cohortId, cohortId))
+    .groupBy(assessmentStage.stage);
+  return ok(
+    rows
+      .filter((r) => moduleNumberOf(r.stage) !== null)
+      .map((r) => ({ moduleNumber: moduleNumberOf(r.stage)!, students: r.students, scores: r.scores }))
+      .sort((a, b) => a.moduleNumber - b.moduleNumber),
+  );
+}
+
+/** Cohort an enrollment belongs to (for server-side ownership checks of id-only actions), or null. */
+export async function enrollmentCohortId(enrollmentId: string): Promise<string | null> {
+  if (!S.setStartingProfileSchema.shape.enrollmentId.safeParse(enrollmentId).success) return null;
+  const [row] = await getDb().select({ c: enrollment.cohortId }).from(enrollment).where(eq(enrollment.id, enrollmentId));
+  return row?.c ?? null;
+}
