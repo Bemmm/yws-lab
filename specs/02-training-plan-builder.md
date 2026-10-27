@@ -70,7 +70,7 @@ Plan saves and reorder operations are atomic. On failed save, preserve the edit 
 - All controls work with keyboard and have visible focus. Images have text alternatives, errors and save status are announced, and meaning never depends on color alone. Target WCAG AA contrast.
 - Preview/public page requires no horizontal scrolling at 375 px. Browser support: current Chrome, Safari, Firefox and Edge.
 - Performance acceptance on the agreed test device/network: readable plan within 2 seconds for 200 exercises; local reorder feedback within 100 ms; catalog search p95 within 300 ms for 2,000 poses. Record test conditions with results.
-- UI copy follows the shared spec. User-authored notes and custom exercise names are displayed as entered. Catalog names resolve by active locale with a defined fallback when a translation is absent.
+- UI copy follows the shared spec. User-authored notes and custom exercise names are displayed as entered. Catalog names resolve by active locale (uk, ru) with Ukrainian as fallback.
 
 ## 8. Release 1.0 exclusions
 No lesson attachment, student-specific assignment, attendance, payment, workout timer/audio, completion tracking, health-condition filters, shared school-wide plan library or editing another owner's plan. Future platform integration does not change current plan ownership.

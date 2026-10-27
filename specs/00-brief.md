@@ -16,7 +16,7 @@ YWS Core sells yoga courses through yws-core.com. The school has teachers and me
 - Account holders can create training plans with a workout builder.
 - Only whitelisted methodologists can view and update student course progress. Other teachers do not conduct this course.
 - First version uses Telegram code sign-in only.
-- Course progress has no established database yet; current information may be in spreadsheets. We will define a simple database and import process in the specs.
+- Course progress has no database: methodologists keep it on paper. Data is entered manually; no import.
 - Repository name: `yws-lab`.
 
 ## Existing source

@@ -14,7 +14,7 @@ Status: adapted product specification, 27 October 2026. Source: [Papaya PAP-101]
 ## 1. Purpose and actors
 Whitelisted YWS methodologists record each trainee's starting point and competency scores through the teacher-training course, then see that person's development and the whole cohort's progress. The product describes growth, not a ranking of students.
 
-Only methodologists can view, create, change, import or export any progress record. Ordinary teachers may use the plan builder but have no course role. Teacher-students are roster records, not a login role. They have no progress-area access or account requirement in 1.0 and receive no automated assessment notifications.
+Only methodologists can view, create, change or export any progress record. Ordinary teachers may use the plan builder but have no course role. Teacher-students are roster records, not a login role. They have no progress-area access or account requirement in 1.0 and receive no automated assessment notifications.
 
 ## 2. Course, cohorts and stages
 The course is **YWS-Lab**. Each cohort is a shared group of teacher-students taking this course. All whitelisted methodologists see and edit the same cohort, roster, modules and assessments; changes by one are visible to the others. A cohort starts with **Point 0** and **Final**; methodologists choose which numbered modules to add. The current real course has five modules and is in module 2, but no fixed five-module template is forced on a cohort. Point 0 is the entry assessment; Final is the exit assessment. Earlier assessments can be entered at any time without using the current date as a scoring rule.
@@ -43,7 +43,7 @@ UI labels and short labels follow the PAP-101 source names and are maintained in
 ## 5. Methodologist workflow
 1. Open **Student progress** and select the shared active cohort. The cohort overview shows the teacher-students and group summary.
 2. In **Manage modules**, choose the module numbers this cohort tracks; add more later as needed. The selected modules define the assessment stages.
-3. Add/find a teacher-student, enroll them in this cohort and select a starting profile. Existing source spreadsheets can be entered manually or imported by an operator (section 10).
+3. Add/find a teacher-student, enroll them in this cohort and select a starting profile. Existing paper records are entered manually (section 10).
 4. Open a student's **Point 0** assessment, enter any subset of 16 scores and save. After each configured module, open its stage and enter scores. The Final stage is used at course exit.
 5. Review student profile, latest full-stage level, change from Point 0, dynamics label, competency scales and stage history.
 6. Review group summary. Filters help locate students without changing summary denominators.
@@ -94,17 +94,15 @@ Student page: name, cohort and starting profile with Edit action; current stage,
 History shows Point 0, the cohort's selected modules in numeric order, and Final, including empty future stages. Rows: total level, group levels and all competencies. Partial-stage level cells show “K/16”; empty cells show an em dash. Competency mini-charts use a common 0–10 axis and only plot assessed stages. On a narrow screen the table can scroll horizontally while the names column stays visible.
 
 ## 9. Privacy, validation and quality
-- Every read/write/import/export checks methodologist role on the server and cohort access. Direct URL/API access by another user gives a non-disclosing response. No student-facing notifications.
+- Every read/write/export checks methodologist role on the server and cohort access. Direct URL/API access by another user gives a non-disclosing response. No student-facing notifications.
 - Server rejects non-integer or out-of-range scores, unknown competency codes, invalid stage order and duplicate enrollment. All writes are transactional. An audit event records who changed which student's stage and when; previous values remain recoverable under the retention policy.
 - General logs, analytics and error telemetry do not contain student names, contacts, notes or scores. Backups are access restricted and a restore is tested before launch.
 - Keyboard operability, visible focus, screen-reader names, numeric labels and WCAG AA contrast are required. At 375 px cards/form stack in one column; history scrolls with sticky labels. At 768 px core screens have no page-wide horizontal scroll.
 - Acceptance performance target: cohort overview readable within 2 seconds for 100 students with Point 0, five selected modules and Final populated on agreed test hardware/network. The data model supports up to 12 selected modules. Record test conditions and results. Pagination/virtualization may be used without changing calculations.
 - Browser support: current Chrome, Safari, Firefox and Edge. UI copy follows the shared spec and numeric decimal separator follows active locale.
 
-## 10. Initial data and import
-Before production use, inspect actual spreadsheets and map their columns to student identity, cohort, starting profile, stage and competency codes. Provide a versioned CSV template for operator import; Excel sheets may be exported to CSV. Import has a dry-run preview with row-level validation and a stable idempotency key so retry cannot duplicate records. Report unresolved duplicates instead of guessing. Missing scores stay unassessed; zero remains zero. Imported assessments record source and import timestamp in audit history. Methodologists can correct them in the normal form. No spreadsheet is uploaded to a public route or kept in the repository.
-
-If source sheets are absent or unusable, enter current students and completed stages manually before launch; verify counts and a sample of records with a methodologist.
+## 10. Initial data
+There is no digital source: progress is kept on paper. 1.0 has no import. Before launch, methodologists enter the current cohort (roster, starting profiles, completed stages) manually through the normal UI; verify counts and a sample of records with a methodologist. Missing scores stay unassessed; zero remains zero.
 
 ## 11. Release 1.0 exclusions
 No student self-service, non-methodologist teacher access to progress, student ranking, comparison between cohorts, automated scoring, attendance, assignments, lesson scheduling, payments, health data or Telegram notifications of scores.
@@ -120,9 +118,9 @@ No student self-service, non-methodologist teacher access to progress, student r
 - [ ] Cohort summary counts and competency averages use all active enrollments independent of filters and expose contributing counts.
 - [ ] Student page/history display missing and partial stages correctly on desktop and narrow screens.
 - [ ] Archive retains historical scores; permanent deletion follows operator process and audit.
-- [ ] Import dry-run, duplicate handling and retry are verified on representative source data, or a documented manual-entry check is completed.
+- [ ] Current cohort is entered manually and a methodologist confirms counts and sample scores against paper records.
 - [ ] School methodologists validate a representative real cohort sample before go-live.
 
 ## 13. Assumptions to confirm during design/data review
-The real course currently has five modules, but each cohort's tracked modules are chosen by a methodologist. The module-number range 1–12 is retained from PAP-101 as a product limit. Existing student data may be in spreadsheets, so import is planned but the concrete mapping depends on the actual files. The imported PAP-101 competency names, starting profiles and calculation thresholds are retained as product rules. Any requested change updates this document, tests and Tasksurf stories together.
+The real course currently has five modules, but each cohort's tracked modules are chosen by a methodologist. The module-number range 1–12 is retained from PAP-101 as a product limit. Existing student data is on paper and is entered manually; there is no import in 1.0. The imported PAP-101 competency names, starting profiles and calculation thresholds are retained as product rules. Any requested change updates this document, tests and `plan/backlog.md` together.
 

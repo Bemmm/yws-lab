@@ -58,7 +58,7 @@ Use a self-hosted, licensed sans-serif family with broad Cyrillic support; **Int
 | Label | 13 px / 650 | 13 px / 650 | 1.35 |
 | Metric | 28–40 px / 750 | 24–32 px / 750 | 1.1 |
 
-Use sentence case and short Ukrainian labels. Do not truncate competency labels without a full-name tooltip or accessible name. Preserve user-authored text as entered.
+Use sentence case and short labels; check every label in both Ukrainian and Russian (Russian runs longer). Do not truncate competency labels without a full-name tooltip or accessible name. Preserve user-authored text as entered.
 
 ## 5. Spacing, shape and elevation
 - Spacing scale: 4, 8, 12, 16, 24, 32, 48, 64 px. Layout uses 8 px rhythm; dense form controls may use 4 px internal spacing.
@@ -102,7 +102,7 @@ Group summary shows denominators next to averages and counts. Filters do not alt
 - Drag-and-drop always has Move up/Move down controls. Sliders have linked number inputs and keyboard support.
 - Mobile assessment form has one competency per row and sticky Save/Cancel action area that does not cover fields.
 - Sensitive progress data is never placed in public metadata, share previews or analytics. Public builder share pages use the same typography/content system without app navigation.
-- Initial interface copy is Ukrainian per the shared spec; localization keys and flexible components support later languages.
+- Interface ships in Ukrainian and Russian per the shared spec; every component must fit both.
 
 ## 10. Design deliverables and approval gate
 Before UI implementation, produce annotated screen layouts for sign-in, plan library/editor/preview/public link, cohort overview/manage modules, teacher-student profile/assessment/history, and shared empty/error/unauthorized states. Verify at desktop 1440 px and mobile 375 px; assess key tablet states at 768 px. Check the chosen logo in final navigation/sign-in layouts. The reference screenshots stay local and untracked until these layouts are validated, then are removed from the repo workspace.

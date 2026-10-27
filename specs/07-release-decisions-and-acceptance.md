@@ -17,12 +17,12 @@ Status: planning baseline, 27 October 2026. The orchestrator owns implementation
 | Release | One release, version 1.0.0 |
 | App boundary | Standalone now; export/mapping boundary for future YWS platform |
 | Accounts | Telegram-only sign-in through official OIDC authorization-code flow |
-| Roles | Regular account can use plans; whitelist grants methodologist access to progress; no student role |
+| Roles | Regular account can use plans; Telegram-ID whitelist in env grants methodologist access to progress; no student role |
 | Progress collaboration | All whitelisted methodologists share the same cohort, roster, selected modules and assessments |
 | Modules | Methodologist chooses distinct module numbers 1–12 per cohort and can add more later; scored modules cannot be removed casually |
 | Builder | Private plan library, curated catalog, autosave, preview, public read-only link and print |
-| Initial data | Operator CSV import with dry-run/idempotency; manual entry if sheets are absent/unusable |
-| UI | Ukrainian-first copy, accessible light work surface/dark navigation; red-wordmark knot logo |
+| Initial data | No import — records are on paper; current cohort entered manually before launch |
+| UI | Ukrainian + Russian; accessible light work surface; red-wordmark knot logo |
 | PR flow | Main orchestrator reviews and decides PRs; user approval is not a release gate |
 
 ## Gate A — specification and design
@@ -37,7 +37,7 @@ Evidence: [shared spec](https://tasksurfing.app/?document=247c49d2-5916-4848-8b9
 
 ## Gate C — data and quality
 - Database migrations run from empty state and have a rollback/restore path.
-- Current cohort data is imported or entered; a methodologist checks counts and representative scores against source records.
+- Current cohort data is entered manually; a methodologist checks counts and representative scores against source records.
 - Automated checks cover score boundaries, ownership/access, token invalidation, save conflicts and core journeys.
 - Keyboard, screen-reader, mobile, contrast, and stated performance targets pass under recorded conditions.
 - No sensitive scores, roster details, share tokens or secrets appear in public pages, logs or source control.
@@ -45,9 +45,9 @@ Evidence: [shared spec](https://tasksurfing.app/?document=247c49d2-5916-4848-8b9
 ## Gate D — operations
 - Production domain and Telegram bot allowed URLs configured; credentials stored outside source control.
 - Backups and a restore test are complete; monitoring/error visibility and rollback are ready.
-- Operator instructions cover whitelist changes, CSV imports, catalog rights/removal and cohort correction.
+- Operator instructions cover whitelist changes (env var + redeploy), catalog rights/removal and cohort correction.
 - Reference screenshots are removed from the workspace before release and never committed.
 
 ## Inputs needed during implementation
-Telegram bot/client credentials and allowed production URL; production hosting/database account; licensed pose names/images; current student spreadsheet or confirmation of manual entry. These inputs have explicit stories and are requested only when their tasks reach execution.
+Telegram bot/client credentials and allowed production URL; production hosting/database account; licensed pose names/images; methodologists' Telegram IDs for the whitelist. These inputs have explicit stories and are requested only when their tasks reach execution.
 

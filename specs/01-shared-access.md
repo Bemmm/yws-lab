@@ -22,7 +22,7 @@ Status: adapted 1.0 specification, 27 October 2026. This document replaces Papay
 - 1.0 uses Telegram's official OpenID Connect authorization-code flow with PKCE. The user starts with **Continue with Telegram**, approves the login in Telegram, and returns to the app. The app does not ask users to type their Telegram account's own login code or phone number. This is the working interpretation of “Telegram code sign-in”; change it only if the product owner explicitly wants a bot-delivered one-time code.
 - The server validates state, PKCE result, token signature, issuer, audience, expiry and nonce before creating a session. Telegram's stable subject is the account key; username and display name are mutable profile fields. See https://core.telegram.org/bots/telegram-login .
 - First successful sign-in creates a regular account automatically. Each account can own training plans.
-- A methodologist role is granted only through a server-side whitelist of Telegram account IDs by an authorized operator. Never infer the role from a Telegram username, chat membership, email or UI input.
+- A methodologist role is granted only through a server-side whitelist of Telegram account IDs, kept in an environment variable (`METHODOLOGIST_TELEGRAM_IDS`, comma-separated) and changed by redeploying. No admin UI in 1.0. Never infer the role from a Telegram username, chat membership, email or UI input.
 - Removing a person from the whitelist revokes progress access on the next request and invalidates relevant sessions. Plans remain accessible to that account unless the account itself is disabled.
 - Every progress read and mutation checks the role on the server. Unprivileged requests return the same non-disclosing result as a missing resource. The navigation hides progress for regular accounts, but hiding alone is not an access control.
 - Record role grants/removals, assessment changes and student deletion with actor and timestamp. Do not log scores or personal details in general application logs.
@@ -33,10 +33,10 @@ Status: adapted 1.0 specification, 27 October 2026. This document replaces Papay
 - Keep teacher-student roster records separate from account identities; no student login role or account-to-roster mapping is required. A student can be enrolled in more than one cohort without merging scores.
 - Store UTC timestamps and show dates/times in the configured school timezone. The default is Europe/Kyiv.
 - Backups and restore test are required before production data entry. Only minimal personal data required for roster and progress is collected.
-- Existing spreadsheets are audited before migration. For 1.0, an operator can map/export source sheets to a documented CSV import template, preview validation failures, and import idempotently. No public spreadsheet upload UI is required. Manual entry remains available.
+- There is no existing digital data: methodologists keep progress on paper. 1.0 has no import; current cohort data is entered manually through the normal UI before launch.
 
 ## UI language and future integration
-- Initial release copy is Ukrainian. Store catalog pose names by locale and keep interface copy in translation files so another language can be added without changing records. User-authored text remains as entered. This is a working locale assumption to confirm before design sign-off.
+- UI ships in two languages: Ukrainian (default) and Russian, switchable per account and remembered. All interface copy lives in translation files; catalog pose names are stored per locale with Ukrainian as fallback. User-authored text remains as entered.
 - The future platform may use its own account system. Keep Telegram subject and YWS-Lab internal account ID separate; expose a documented export/mapping path rather than sharing the future platform's unfinished database in 1.0.
 
 ## Acceptance

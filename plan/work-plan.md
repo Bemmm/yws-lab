@@ -17,7 +17,7 @@ The YWS-Lab module and shared-access specs are adapted. Design system, screen bl
 2. **Design system and UX** — reference audit, red-wordmark logo choice, tokens/components and responsive screen blueprints are documented.
 3. **Foundation** — choose stack from the approved specs, establish environments/CI, implement Telegram sign-in, authorization, database and migrations.
 4. **Workout builder** — plan library, editor, autosave/conflicts, and preview. Catalog, sharing and print behavior depend on the 1.0 scope decision.
-5. **Student progress** — shared cohort/teacher-student roster, methodologist-selected module stages, 16-competency assessments across Point 0, selected modules and Final, calculations, student/group views, plus spreadsheet import.
+5. **Student progress** — shared cohort/teacher-student roster, methodologist-selected module stages, 16-competency assessments across Point 0, selected modules and Final, calculations, student/group views; current data entered manually (no import).
 6. **Release validation and launch** — end-to-end acceptance, accessibility, security/privacy, data checks, deployment, backups, monitoring and rollback.
 
 ## Release structure
@@ -33,11 +33,11 @@ The YWS-Lab module and shared-access specs are adapted. Design system, screen bl
 
 ## Release 1.0 scope decisions
 - Include curated pose catalog, shareable links and print.
-- Plan operator CSV import with dry-run; use manual entry if source sheets are absent or unusable.
+- No import: progress is on paper and is entered manually before launch.
 - Use official Telegram OIDC authorization-code sign-in and a shared methodologist cohort/teacher-student roster. Methodologists choose module numbers per cohort. Production hosting and credentials are implementation inputs.
 
 ## Adopted backlog scope
-Release 1.0 includes the curated pose catalog, shareable/printable plans and an operator import path. Source content rights and actual spreadsheet mapping are verified during their implementation stories.
+Release 1.0 includes the curated pose catalog, shareable/printable plans. Source content rights are verified during the catalog story.
 
 ## Adapted specs now available
 - [Shared product and access](https://tasksurfing.app/?document=247c49d2-5916-4848-8b94-4bab36ed3f1a)
@@ -51,3 +51,11 @@ These adapted documents supersede the Papaya imports for Release 1.0. They adopt
 - [Screen blueprints](https://tasksurfing.app/?document=3f3b15ec-ebdd-4607-9814-1cb4e7c7f612)
 - [Release decisions and acceptance matrix](https://tasksurfing.app/?document=e20ad868-c5d9-4b4b-b3cb-cb4092c68d14)
 
+
+
+## Decisions — 27 October 2026 (after Tasksurf import)
+- Methodologist whitelist = Telegram IDs in env var `METHODOLOGIST_TELEGRAM_IDS`; no admin UI.
+- UI in Ukrainian (default) and Russian.
+- No spreadsheet/CSV import: data is on paper, entered manually. YWSLAB-34, -62, -63 dropped.
+- Hosting: single monolith on Render (free tier), Postgres on Neon (free tier).
+- Specs and backlog live in this repo; Tasksurf is retired for this project.

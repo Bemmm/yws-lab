@@ -256,15 +256,15 @@ Alphabetical cards, dynamics counts, stage completion and competency average den
 
 16 scales, signed changes, selected-module columns, partial/empty states, common 0–10 charts and sticky labels on mobile.
 
-### YWSLAB-34 · story · `backlog` — Audit and import existing student data
+### YWSLAB-34 · story · `dropped` — Audit and import existing student data
 
 Audit existing student spreadsheets, map them to versioned CSV, dry-run validation and idempotent operator import; reconcile a real sample. Use documented manual entry if sheets are absent or unusable.
 
-#### YWSLAB-62 · backend · `todo` — Implement operator CSV dry-run and import
+#### YWSLAB-62 · backend · `dropped` — Implement operator CSV dry-run and import
 
 Versioned template, row validation, duplicate resolution and idempotent commit; no source files in repo or public upload route.
 
-#### YWSLAB-63 · test · `todo` — Reconcile imported cohort against source
+#### YWSLAB-63 · test · `dropped` — Reconcile imported cohort against source
 
 Verify roster counts, selected modules and sampled scores with a methodologist; document manual-entry fallback if sheets unusable.
 
