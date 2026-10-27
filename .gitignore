@@ -21,3 +21,6 @@ work/
 next-env.d.ts
 npm-debug.log*
 .DS_Store
+
+# Agent scratch
+.claude/worktrees/
