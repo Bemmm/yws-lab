@@ -22,7 +22,9 @@ const lookup = cache(async (token: string) => {
 export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
   const { token } = await params;
   const program = await lookup(token);
-  return { title: program?.title.trim() || undefined, robots: { index: false, follow: false } };
+  // Omit the key (rather than `title: undefined`) so an untitled or invalid link still gets the layout's default <title>.
+  const title = program?.title.trim();
+  return { ...(title ? { title } : {}), robots: { index: false, follow: false } };
 }
 
 /** Public read-only page. Not an app route: no shell, no account, no owner data. */
