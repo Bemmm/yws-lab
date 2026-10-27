@@ -276,9 +276,9 @@ export function AssessmentForm({
       ) : null}
 
       {locked ? null : (
-        <Card as="section" aria-labelledby="note-h">
+        <Card>
           <div className="p-row" style={{ justifyContent: "space-between" }}>
-            <label id="note-h" htmlFor="stage-note" className="text-body-strong">
+            <label htmlFor="stage-note" className="text-body-strong">
               {t.assess.note}
             </label>
             <span id="note-count" className="p-muted" aria-live="off">
