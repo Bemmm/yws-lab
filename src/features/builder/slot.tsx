@@ -61,7 +61,7 @@ export function DropSlot(props: DropSlotProps) {
         // transition-colors only: a blanket `transition` animates transform and fights dnd-kit.
         "relative flex flex-col rounded-sm transition-colors",
         hasAsana
-          ? `bg-asana-bg outline-2 ${isOver && isLibraryDrag ? "outline outline-ink" : "outline-transparent"}`
+          ? `bg-bg-page outline-2 ${isOver && isLibraryDrag ? "outline outline-ink" : "outline-transparent"}`
           : `border-2 border-dashed ${isOver ? "border-ink bg-bg-card" : "border-toggle-off bg-bg-page/50"}`,
         isDragging ? "z-10" : "",
       ].join(" ")}
@@ -187,7 +187,7 @@ function FilledSlot({
     <div className={`group relative flex h-full w-full flex-col rounded-sm ${isDragging ? "opacity-30" : ""}`}>
       <div
         {...handle}
-        className={`relative aspect-square flex-1 touch-none rounded-sm ${paintMode ? "cursor-crosshair" : "cursor-grab active:cursor-grabbing"}`}
+        className={`relative aspect-square flex-1 touch-none rounded-sm bg-asana-bg ${paintMode ? "cursor-crosshair" : "cursor-grab active:cursor-grabbing"}`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- local school-owned SVGs, no optimization needed */}
         <img src={asana.src} alt={alt} draggable={false} className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain p-2" />
