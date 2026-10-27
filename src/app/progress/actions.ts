@@ -80,9 +80,10 @@ export async function saveStageAction(
   enrollmentId: string,
   stage: string,
   scores: Record<string, number | null>,
+  note: string | null,
   expectedVersion: number,
 ) {
   const me = await requireMethodologist();
   await assertInCohort(cohortId, enrollmentId);
-  return svc.saveStage(enrollmentId, stage, scores, expectedVersion, me.id);
+  return svc.saveStage(enrollmentId, stage, scores, note, expectedVersion, me.id);
 }

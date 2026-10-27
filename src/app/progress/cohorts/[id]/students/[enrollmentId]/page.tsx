@@ -9,6 +9,7 @@ import { StatStrip } from "@/components/StatStrip";
 import { EnrollmentControls } from "@/features/progress/EnrollmentControls";
 import { attentionReason, fmt, formatGain, formatLevel, pillStatus, stageLabel } from "@/features/progress/format";
 import { HistoryTable } from "@/features/progress/HistoryTable";
+import { StageNotes } from "@/features/progress/StageNotes";
 import { assessHref, cohortHref, parseFilters } from "@/features/progress/nav";
 import { resolveParams, unwrap } from "@/features/progress/server";
 import { getDictionary, getLocale } from "@/i18n/server";
@@ -163,6 +164,7 @@ export default async function StudentPage({
             <p className="p-muted">{t.student.legend}</p>
           </div>
           <HistoryTable view={view} t={t} locale={locale} />
+          <StageNotes view={view} t={t} />
         </section>
       </div>
     </AppShell>

@@ -74,10 +74,17 @@ export const setStartingProfileSchema = z.object({ enrollmentId: uuid, startingP
 /** Raw scores payload; range / unknown-code checks live in `validateScores` so they get distinct typed errors. */
 export const scoresInputSchema = z.record(z.string(), z.number().nullable());
 
+/** Trim; empty becomes null. */
+export const normalizeNote = (n: string | null | undefined): string | null => {
+  const v = (n ?? "").trim();
+  return v === "" ? null : v;
+};
+
 export const saveStageSchema = z.object({
   enrollmentId: uuid,
   stage: stageSchema,
   scores: scoresInputSchema,
+  note: z.string().trim().max(2000).nullable(),
   expectedVersion: z.number().int().min(0),
   actorId: uuid,
 });

@@ -14,6 +14,9 @@ import { Dialog } from "./Dialog";
 import {
   countAssessed,
   isDirty,
+  isNoteDirty,
+  NOTE_MAX,
+  normalizeNote,
   parseScoreInput,
   sliderKey,
   sliderPosition,
@@ -53,6 +56,7 @@ export function AssessmentForm({
   stage,
   initialVersion,
   initialScores,
+  initialNote,
   previous,
   readOnly,
   locked,
@@ -64,6 +68,7 @@ export function AssessmentForm({
   stage: StageId;
   initialVersion: number;
   initialScores: Record<CompetencyCode, number | null>;
+  initialNote: string | null;
   previous: Record<CompetencyCode, { stage: StageId; score: number } | null>;
   readOnly: boolean;
   /** The stage is not open yet: show the explanation instead of the rows. */
@@ -76,13 +81,15 @@ export function AssessmentForm({
   const [base, setBase] = useState<Draft>(() => toDraft(initialScores));
   const [version, setVersion] = useState(initialVersion);
   const [draft, setDraft] = useState<Draft>(() => toDraft(initialScores));
+  const [baseNote, setBaseNote] = useState<string | null>(initialNote);
+  const [note, setNote] = useState<string>(initialNote ?? "");
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState(false);
   const [banner, setBanner] = useState<Banner>(null);
   const [guard, setGuard] = useState<{ href: string } | null>(null);
   const leaving = useRef(false);
 
-  const dirty = !readOnly && isDirty(base, draft);
+  const dirty = !readOnly && (isDirty(base, draft) || isNoteDirty(baseNote, note));
   const assessed = countAssessed(draft);
   const backHref = studentHref(cohortId, enrollmentId, filters);
 
@@ -96,9 +103,11 @@ export function AssessmentForm({
     setBanner(null);
     setSavedMsg(false);
     try {
-      const r = await saveStageAction(cohortId, enrollmentId, stage, toPayload(draft), version);
+      const r = await saveStageAction(cohortId, enrollmentId, stage, toPayload(draft), normalizeNote(note), version);
       if (r.ok) {
         setBase(toDraft(r.value.scores));
+        setBaseNote(r.value.note);
+        setNote(r.value.note ?? "");
         setVersion(r.value.version);
         setSavedMsg(true);
         return true;
@@ -106,6 +115,7 @@ export function AssessmentForm({
       if (r.error.code === "stage_conflict") {
         // Show the latest saved values; the attempted edit stays in the fields.
         setBase(toDraft(r.error.currentScores));
+        setBaseNote(r.error.currentNote);
         setVersion(r.error.currentVersion);
         setBanner({ kind: "conflict" });
       } else {
@@ -118,7 +128,7 @@ export function AssessmentForm({
     } finally {
       setSaving(false);
     }
-  }, [draft, cohortId, enrollmentId, stage, t, version]);
+  }, [draft, note, cohortId, enrollmentId, stage, t, version]);
 
   const navigate = useCallback(
     (href: string) => {
@@ -227,6 +237,7 @@ export function AssessmentForm({
               variant="secondary"
               onClick={() => {
                 setDraft(base);
+                setNote(baseNote ?? "");
                 setBanner(null);
               }}
             >
@@ -263,6 +274,38 @@ export function AssessmentForm({
           </div>
         </Card>
       ) : null}
+
+      {locked ? null : (
+        <Card as="section" aria-labelledby="note-h">
+          <div className="p-row" style={{ justifyContent: "space-between" }}>
+            <label id="note-h" htmlFor="stage-note" className="text-body-strong">
+              {t.assess.note}
+            </label>
+            <span id="note-count" className="p-muted" aria-live="off">
+              {fmt(t.assess.noteCounter, { n: note.length, max: NOTE_MAX })}
+            </span>
+          </div>
+          <textarea
+            id="stage-note"
+            className="p-textarea w-full"
+            rows={5}
+            maxLength={NOTE_MAX}
+            value={note}
+            disabled={readOnly}
+            aria-describedby="note-count"
+            placeholder={t.assess.notePlaceholder}
+            onChange={(e) => {
+              setSavedMsg(false);
+              setNote(e.target.value);
+            }}
+          />
+          {banner?.kind === "conflict" && normalizeNote(note) !== baseNote ? (
+            <p className="p-saved-marker" style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+              {baseNote === null ? t.assess.noteConflictNone : fmt(t.assess.noteConflictSaved, { note: baseNote })}
+            </p>
+          ) : null}
+        </Card>
+      )}
 
       {(locked ? [] : groups).map(({ group, items }) => {
         const k = items.filter((c) => draft[c.code] !== null).length;

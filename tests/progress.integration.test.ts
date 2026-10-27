@@ -26,8 +26,8 @@ async function enrolled(cohortId: string, name: string, profile = "polishing", c
   if (!r.ok) throw new Error(`enroll failed ${JSON.stringify(r.error)}`);
   return r.value;
 }
-const save = (e: string, stage: string, scores: Record<string, number | null>, v: number) =>
-  svc.saveStage(e, stage, scores, v, actor);
+const save = (e: string, stage: string, scores: Record<string, number | null>, v: number, note: string | null = null) =>
+  svc.saveStage(e, stage, scores, note, v, actor);
 function expectErr<T>(r: { ok: boolean; error?: unknown; value?: T }, code: string) {
   expect(r.ok).toBe(false);
   expect((r.error as { code: string }).code).toBe(code);
@@ -272,6 +272,76 @@ describe("assessments", () => {
     expect(ev!.data.stage).toBe("m1");
     expect(ev!.data.previous).toEqual({ confidence: 6 });
     expect(ev!.data.next).toEqual({ confidence: 8 });
+  });
+});
+
+describe("curator observation note", () => {
+  it("saves with the scores atomically, trims, clears on empty, and audits previous and next", async () => {
+    const c = await setup();
+    const e = await enrolled(c.id, "it-Note");
+    const r1 = await save(e.id, "point0", { confidence: 4 }, 0, "  Line one\nLine two  ");
+    expect(r1.ok && r1.value.note).toBe("Line one\nLine two");
+    const f1 = await svc.getStageForm(e.id, "point0");
+    expect(f1.ok && f1.value.note).toBe("Line one\nLine two");
+    const p1 = await svc.getStudentProgress(e.id);
+    expect(p1.ok && p1.value.stages.find((s) => s.stage === "point0")!.note).toBe("Line one\nLine two");
+    expect(p1.ok && p1.value.stages.find((s) => s.stage === "final")!.note).toBeNull();
+
+    const r2 = await save(e.id, "point0", { confidence: 5 }, 1, "Second");
+    expect(r2.ok && r2.value.version).toBe(2);
+    const [ev] = await sql`select data from audit_event where entity_id = ${e.id} and action = 'assessment.save' order by created_at desc, id limit 1`;
+    expect(ev!.data.previousNote).toBe("Line one\nLine two");
+    expect(ev!.data.nextNote).toBe("Second");
+
+    await save(e.id, "point0", { confidence: 5 }, 2, "   ");
+    const f2 = await svc.getStageForm(e.id, "point0");
+    expect(f2.ok && f2.value.note).toBeNull();
+    const [row] = await sql`select note from assessment_stage where enrollment_id = ${e.id}`;
+    expect(row!.note).toBeNull();
+  });
+
+  it("a failed score save does not persist the note", async () => {
+    const c = await setup();
+    const e = await enrolled(c.id, "it-NoteAtomic");
+    await save(e.id, "point0", { confidence: 5 }, 0, "keep");
+    expectErr(await save(e.id, "point0", { confidence: 11 }, 1, "lost"), "invalid_scores");
+    const f = await svc.getStageForm(e.id, "point0");
+    expect(f.ok && f.value.note).toBe("keep");
+  });
+
+  it("a note-only save creates the stage but does not unlock the next stage", async () => {
+    const c = await setup([1]);
+    const e = await enrolled(c.id, "it-NoteOnly");
+    const r = await save(e.id, "point0", {}, 0, "Only words");
+    expect(r.ok && r.value.scored).toBe(0);
+    const f = await svc.getStageForm(e.id, "point0");
+    expect(f.ok && f.value.note).toBe("Only words");
+    expect(f.ok && f.value.scored).toBe(0);
+    const locked = expectErr(await save(e.id, "m1", { confidence: 5 }, 0), "stage_unavailable");
+    expect(locked.availability).toEqual({ available: false, reason: "prior_unscored", requires: "point0" });
+    const m1 = await svc.getStageForm(e.id, "m1");
+    expect(m1.ok && m1.value.availability.available).toBe(false);
+  });
+
+  it("rejects notes over 2000 characters and accepts exactly 2000", async () => {
+    const c = await setup();
+    const e = await enrolled(c.id, "it-NoteLen");
+    expectErr(await save(e.id, "point0", { confidence: 5 }, 0, "x".repeat(2001)), "invalid_input");
+    expect((await svc.getStageForm(e.id, "point0")).ok && true).toBe(true);
+    const ok = await save(e.id, "point0", { confidence: 5 }, 0, "я".repeat(2000));
+    expect(ok.ok).toBe(true);
+    await expect(sql`update assessment_stage set note = ${"x".repeat(2001)} where enrollment_id = ${e.id}`).rejects.toThrow();
+  });
+
+  it("a stale version rejects the note change too and returns the latest note", async () => {
+    const c = await setup();
+    const e = await enrolled(c.id, "it-NoteStale");
+    await save(e.id, "point0", { confidence: 5 }, 0, "A");
+    await save(e.id, "point0", { confidence: 5 }, 1, "B");
+    const stale = expectErr(await save(e.id, "point0", { confidence: 5 }, 1, "C"), "stage_conflict");
+    expect(stale.currentNote).toBe("B");
+    const f = await svc.getStageForm(e.id, "point0");
+    expect(f.ok && f.value.note).toBe("B");
   });
 });
 

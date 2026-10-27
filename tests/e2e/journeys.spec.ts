@@ -152,25 +152,32 @@ test.describe("methodologist: student progress", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(studentName);
     const studentUrl = new URL(page.url()).pathname;
 
-    const fillAndSave = async (stageLink: RegExp, first: number, rest: number) => {
+    const fillAndSave = async (stageLink: RegExp, first: number, rest: number, observation?: string) => {
       await page.goto(studentUrl);
       await page.getByRole("navigation", { name: "Оцінити етап" }).getByRole("link", { name: stageLink }).click();
       const numbers = page.locator('input[inputmode="numeric"]');
       await expect(numbers).toHaveCount(16);
       await numbers.nth(0).fill(String(first));
       for (let i = 1; i < 16; i++) await numbers.nth(i).fill(String(rest));
+      if (observation) await page.getByLabel("Спостереження куратора").fill(observation);
       await page.getByRole("button", { name: "Зберегти", exact: true }).click();
       await expect(page.getByText("Збережено.")).toBeVisible();
     };
+    const observation = "Стає впевненішою на голосі.\nПотрібна увага до дихання.";
 
     // Point 0 (first score is a real zero), then Module 1.
-    await fillAndSave(/^Точка 0/, 0, 3);
+    await fillAndSave(/^Точка 0/, 0, 3, observation);
     await page.reload();
+    await expect(page.getByLabel("Спостереження куратора")).toHaveValue(observation);
     await expect(page.locator('input[inputmode="numeric"]').nth(0)).toHaveValue("0");
     await fillAndSave(/^Модуль 1/, 1, 5);
 
     // Student page: skill bars with signed changes, history, dynamics label.
     await page.goto(studentUrl);
+    const noteItem = page.getByTestId("note-point0");
+    await expect(noteItem).toContainText("Стає впевненішою на голосі.");
+    await expect(noteItem).toContainText("Потрібна увага до дихання.");
+    await expect(page.getByTestId("note-m1")).toHaveCount(0);
     await expect(page.getByText("+1 від точки 0").first()).toBeVisible();
     await expect(page.getByText("+2 від точки 0").first()).toBeVisible();
     await expect(page.getByRole("img", { name: /Володіння мовою та голосом: 1\/10/ })).toBeVisible();

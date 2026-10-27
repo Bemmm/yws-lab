@@ -15,6 +15,13 @@
       "when": 1793124955004,
       "tag": "0001_futuristic_banshee",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793133552880,
+      "tag": "0002_peaceful_wrecker",
+      "breakpoints": true
     }
   ]
 }
