@@ -198,3 +198,8 @@ Open decisions: keep the second preview view ("Cards")? Hash vs store share toke
 2. Share tokens are stored raw (random, ≥128 bits, URL-safe) so the owner can copy the link again; disabling sets the token to null, re-enabling issues a new token, so old links stay dead.
 3. `side` quirks are fixed: `side` is cleared only when the slot becomes fully empty (no asana and no segments); clearing segments or the asana alone keeps it.
 4. Server caps as assumed in this spec are accepted for 1.0.
+5. Sharing an empty plan is allowed (as in Papaya); the "nonempty" wording in the backlog is not enforced.
+6. Moving a slot "earlier/later" by keyboard across a set boundary swaps it with the edge slot of the neighbouring set.
+7. Library "Show more" is a server-side `?page=` link (24 per page); the "Link" menu item opens a dialog with the share panel.
+8. Public token lookups are rate-limited in memory (60/min per IP); throttled requests get the same neutral 404.
+9. Save/share actions return `unauthorized` instead of redirecting, so the editor keeps unsaved edits and shows a sign-in prompt.
