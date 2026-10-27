@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LanguageProvider } from "@/components/i18n/language";
 
 export const metadata: Metadata = {
   title: "YWS Lab",
@@ -17,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="uk">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased"><LanguageProvider>{children}</LanguageProvider></body>
     </html>
   );
 }

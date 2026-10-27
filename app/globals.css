@@ -54,6 +54,13 @@
 }
 
 @theme inline {
+  --color-surface: var(--card);
+  --color-background-subtle: var(--background);
+  --color-foreground-secondary: #60636e;
+  --color-foreground-muted: var(--muted-foreground);
+  --color-primary-hover: #332777;
+  --color-primary-soft: #e9e6f8;
+  --font-manrope: Arial, Helvetica, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

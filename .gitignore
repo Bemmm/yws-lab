@@ -22,3 +22,6 @@ references/
 next-env.d.ts
 npm-debug.log*
 .DS_Store
+
+# Papaya source checkout used only for selectively copied builder assets.
+/papaya/
