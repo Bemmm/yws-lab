@@ -112,11 +112,11 @@ Create versioned tables/constraints for account, plan, sections, exercises, pose
 
 Create shared course/cohort, selected module, teacher-student roster, enrollment, assessment and revision tables; prevent duplicate modules/enrollments and cross-cohort joins.
 
-### YWSLAB-20 · story · `backlog` — Document future platform integration boundary
+### YWSLAB-20 · story · `done` — Document future platform integration boundary
 
 Define stable identity and data assumptions plus an export path so standalone YWS-Lab can integrate later.
 
-#### YWSLAB-43 · analysis · `todo` — Define future platform export and identity mapping
+#### YWSLAB-43 · analysis · `done` — Define future platform export and identity mapping
 
 Document stable internal IDs, Telegram subject separation, export schema and migration boundary; no dependency on unfinished platform in 1.0.
 

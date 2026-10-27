@@ -4,6 +4,8 @@ App for YWS methodologists and teachers: training plan builder and student cours
 
 - `specs/` — product specs (source of truth). `specs/archive/` keeps the Papaya baselines for provenance only.
 - `plan/work-plan.md` — Release 1.0 work order; `plan/backlog.md` — epics, stories and tasks with status.
+- `docs/operations.md` — operator guide: env vars, access grants, deploy, rollback, backups and restore test.
+- `specs/08-platform-integration-boundary.md` — what YWS-Lab owns and shares, identity mapping and export plan for the future YWS platform.
 
 Specs and plan were imported from Tasksurf on 2026-10-27 and now live only here.
 
