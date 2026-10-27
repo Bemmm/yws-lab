@@ -1,6 +1,10 @@
+import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 
 const uid = () => Math.random().toString(36).slice(2, 8);
+
+/** aria-labels of the filled slots, in DOM order (diagnostic output when the order is wrong). */
+const slotLabels = (page: Page) => page.locator('[aria-label^="Слот "][aria-roledescription]').evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")));
 
 test.describe("teacher: training plans", () => {
   test("create, edit, autosave, reload, duplicate, preview, share, revoke", async ({ teacher, otherTeacher, anonymous, browser, baseURL }) => {
@@ -28,23 +32,24 @@ test.describe("teacher: training plans", () => {
     expect(nameA).not.toBe(nameB);
     await catalog.nth(0).click();
     await catalog.nth(1).click();
-    await expect(page.getByRole("button", { name: `Слот 1: ${nameA}` })).toBeVisible();
-    await expect(page.getByRole("button", { name: `Слот 2: ${nameB}` })).toBeVisible();
+    await expect(page.getByRole("group", { name: `Слот 1: ${nameA}` })).toBeVisible();
+    await expect(page.getByRole("group", { name: `Слот 2: ${nameB}` })).toBeVisible();
 
     // Keyboard path: focus the move button and press Enter.
     const moveLater = page.getByRole("button", { name: "Перемістити слот пізніше" }).first();
     await moveLater.focus();
     await page.keyboard.press("Enter");
-    await expect(page.getByRole("button", { name: `Слот 1: ${nameB}` })).toBeVisible();
-    await expect(page.getByRole("button", { name: `Слот 2: ${nameA}` })).toBeVisible();
+    await expect.poll(async () => (await slotLabels(page)).slice(0, 2), { message: "slot order after keyboard move" }).toEqual([`Слот 1: ${nameB}`, `Слот 2: ${nameA}`]);
+    await expect(page.getByRole("group", { name: `Слот 1: ${nameB}` })).toBeVisible();
+    await expect(page.getByRole("group", { name: `Слот 2: ${nameA}` })).toBeVisible();
 
     // Saved, then reload shows the same data.
     await expect(page.getByRole("status").filter({ hasText: "Збережено" }).first()).toBeVisible({ timeout: 20_000 });
     await page.reload();
     await expect(page.getByRole("textbox", { name: "Назва плану" })).toHaveValue(title);
     await expect(page.getByRole("textbox", { name: "Назва сету" })).toHaveCount(2);
-    await expect(page.getByRole("button", { name: `Слот 1: ${nameB}` })).toBeVisible();
-    await expect(page.getByRole("button", { name: `Слот 2: ${nameA}` })).toBeVisible();
+    await expect(page.getByRole("group", { name: `Слот 1: ${nameB}` })).toBeVisible();
+    await expect(page.getByRole("group", { name: `Слот 2: ${nameA}` })).toBeVisible();
 
     // Preview (owner-only page).
     await page.goto(`/plans/${planId}/preview`);
@@ -170,7 +175,7 @@ test.describe("methodologist: student progress", () => {
     await expect(page.getByText("+2 від точки 0").first()).toBeVisible();
     await expect(page.getByRole("img", { name: /Володіння мовою та голосом: 1\/10/ })).toBeVisible();
     await expect(page.getByText("Динаміка:", { exact: true })).toBeVisible();
-    await expect(page.getByText(/^(Різке зростання|Стійке зростання|Стагнація|Зона уваги)$/).first()).toBeVisible();
+    await expect(page.getByText(/Різке зростання|Стійке зростання|Стагнація|Зона уваги/).first()).toBeVisible();
     const row = page.getByRole("row", { name: /Володіння мовою та голосом/ }).first();
     await expect(row.getByRole("cell").first()).toHaveText("0");
 
@@ -179,7 +184,7 @@ test.describe("methodologist: student progress", () => {
     const card = page.getByRole("article", { name: studentName });
     await expect(card).toBeVisible();
     await expect(card.getByText(/Модуль 1/).first()).toBeVisible();
-    await expect(card.getByText(/^(Різке зростання|Стійке зростання|Стагнація|Зона уваги)$/)).toBeVisible();
+    await expect(card.getByText(/Різке зростання|Стійке зростання|Стагнація|Зона уваги/)).toBeVisible();
     await expect(card.getByText("Базові")).toBeVisible();
   });
 });

@@ -169,7 +169,14 @@ function FilledSlot({
           }
         },
       }
-    : { ...dragAttributes, ...dragListeners, "aria-label": `${position}: ${alt}`, title: t.slot.dragHint };
+    : {
+        ...dragAttributes,
+        ...dragListeners,
+        // dnd-kit defaults to role="button", which may not contain the nested clear/move/side controls (axe: nested-interactive).
+        role: "group",
+        "aria-label": `${position}: ${alt}`,
+        title: t.slot.dragHint,
+      };
 
   return (
     <div className={`group relative flex h-full w-full flex-col rounded-sm ${isDragging ? "opacity-30" : ""}`}>
