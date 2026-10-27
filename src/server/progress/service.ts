@@ -576,7 +576,9 @@ export async function saveStage(
   if (issues.length) return fail({ code: "invalid_scores", issues });
 
   return tx(async (t) => {
-    const { e, c } = await loadEnrollment(t, enrollmentId, true);
+    const { e } = await loadEnrollment(t, enrollmentId, true);
+    // Lock the cohort row too, so a concurrent setModules can't remove a module this save writes to.
+    const c = await loadCohort(t, e.cohortId, true);
     assertWritable(c);
     if (e.archivedAt) throw new Abort({ code: "enrollment_archived" });
 
