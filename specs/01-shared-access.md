@@ -29,7 +29,7 @@ Status: adapted 1.0 specification, 27 October 2026. This document replaces Papay
 
 ## Sessions and data
 - Secure, HttpOnly, SameSite cookies; HTTPS in production; session rotation after login; explicit sign-out; a finite idle and absolute lifetime specified in implementation configuration.
-- Database entities: account, whitelist/role grant, program, program section, exercise, pose catalog entry, program share token, course, cohort, cohort module, student roster record, enrollment, assessment, assessment revision and audit event. Foreign keys prevent cross-account/cross-cohort leakage.
+- Database entities: account, whitelist/role grant, program, program section, exercise, pose catalog entry, program share token, course, cohort, cohort module, student roster record, enrollment, assessment and audit event (previous assessment values are kept in `audit_event.data`; there is no separate revision table). The whitelist itself lives in env vars; its change history is Render's environment event log. Foreign keys prevent cross-account/cross-cohort leakage.
 - Keep teacher-student roster records separate from account identities; no student login role or account-to-roster mapping is required. A student can be enrolled in more than one cohort without merging scores.
 - Store UTC timestamps and show dates/times in the configured school timezone. The default is Europe/Kyiv.
 - Backups and restore test are required before production data entry. Only minimal personal data required for roster and progress is collected.
