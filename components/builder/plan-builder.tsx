@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { BuilderClient } from './core/builder-client'
 import { BuilderStringsProvider, DEFAULT_BUILDER_STRINGS, UK_BUILDER_STRINGS } from './core/_lib/strings'
@@ -18,16 +18,18 @@ export function PlanBuilder({id}:{id:string}) {
   const [plan,setPlan]=useState<Plan|null>(null)
   const [error,setError]=useState('')
   const [version,setVersion]=useState(0)
+  const versionRef=useRef(0)
+  const saveQueue=useRef<Promise<void>>(Promise.resolve())
   const {locale}=useLocale()
-  useEffect(()=>{let live=true;request<Plan>(`/api/plans/${id}`).then(value=>{if(live){setPlan(value);setVersion(value.version)}}).catch(e=>live&&setError(e.message));return()=>{live=false}},[id])
+  useEffect(()=>{let live=true;request<Plan>(`/api/plans/${id}`).then(value=>{if(live){setPlan(value);setVersion(value.version);versionRef.current=value.version}}).catch(e=>live&&setError(e.message));return()=>{live=false}},[id])
   if(error)return <main className="min-h-dvh p-8"><Link href="/plans">← К программам</Link><p role="alert" className="mt-8 text-red-700">{error}</p></main>
   if(!plan)return <main className="min-h-dvh animate-pulse bg-stone-100" />
-  const save=async(program:Program)=>{const response=await request<Plan>(`/api/plans/${id}`,'PATCH',{expectedVersion:version,title:program.title,description:program.description||'',program});setVersion(response.version);setPlan(response);return {status:'ok'}}
-  const share={initialToken:null,enable:async()=>{const result=await request<{shareToken:string}>(`/api/plans/${id}/share`,'POST');return {status:'ok',shareToken:result.shareToken}},disable:async()=>request(`/api/plans/${id}/share`,'DELETE')}
+  const save=async(program:Program)=>{let result:Plan|undefined;const task=saveQueue.current.then(async()=>{result=await request<Plan>(`/api/plans/${id}`,'PATCH',{expectedVersion:versionRef.current,title:program.title,description:program.description||'',program});versionRef.current=result.version});saveQueue.current=task.then(()=>{},()=>{});await task;if(result){setVersion(result.version);setPlan(result)}return {status:'ok'}}
+  const share={initialToken:null,enable:async()=>{if(plan.shareActive&&!confirm('Создать новую ссылку? Предыдущая ссылка перестанет работать.'))return {status:'cancelled'};const result=await request<{shareToken:string}>(`/api/plans/${id}/share`,'POST');setPlan(current=>current?{...current,shareActive:true}:current);return {status:'ok',shareToken:result.shareToken}},disable:async()=>{await request(`/api/plans/${id}/share`,'DELETE');setPlan(current=>current?{...current,shareActive:false}:current)}}
   return <div className="min-h-dvh bg-[#f6f7f8] p-0 lg:p-3">
     <div className="mx-auto mb-2 flex max-w-[1800px] items-center justify-between px-4 pt-3 lg:px-2">
       <Link className="text-sm font-medium text-neutral-600 hover:text-neutral-950" href="/plans">← К программам</Link>
-      <span className="text-xs font-medium text-neutral-500">YWS Lab</span>
+      <div className="flex items-center gap-3"><span className="text-xs font-medium text-neutral-500">YWS Lab</span>{plan.shareActive&&<button type="button" className="text-xs text-rose-700 underline" onClick={async()=>{if(confirm('Отозвать действующую ссылку?')){await request(`/api/plans/${id}/share`,'DELETE');setPlan(current=>current?{...current,shareActive:false}:current)}}}>Отозвать активную ссылку</button>}</div>
     </div>
     <BuilderStringsProvider value={locale==='ru'?DEFAULT_BUILDER_STRINGS:UK_BUILDER_STRINGS}>
       <BuilderClient initialProgram={plan.program} save={save} share={share} previewHref={()=>`/plans/${id}/preview`} brand={{href:'/plans',label:'YWS Lab',icon:<span aria-hidden="true">Y</span>}} />
