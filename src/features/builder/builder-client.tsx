@@ -29,7 +29,7 @@ import { format } from "@/i18n/format";
 import { getAsana } from "./asana-manifest";
 import { ArrowLeftIcon, EyeIcon, XIcon } from "./icons";
 import { LibraryPanel, type LibraryTab } from "./library-panel";
-import { type Program, type SaveResult, type SaveState, type SlotColor, useProgram } from "./use-program";
+import { type HideSaveResult, type Program, type SaveResult, type SaveState, type SlotColor, useProgram } from "./use-program";
 import { PAINT_COLORS } from "./palette";
 import { ScheduleTable } from "./schedule-table";
 import { AutoGrowNote, SessionCard, type SessionDragData } from "./session-card";
@@ -46,6 +46,8 @@ export type BuilderClientProps = {
   initialProgram: Program;
   /** Persist the full document. The wiring layer attaches the last known version (see PlanEditor). */
   save: (program: Program) => Promise<SaveResult>;
+  /** Keepalive transport for the final flush on page hide (optional). */
+  saveOnHide?: (program: Program) => Promise<HideSaveResult>;
   share?: ShareConfig;
   /** Builder -> preview link, computed from the program id. */
   previewHref: (programId: string) => string;
@@ -123,7 +125,7 @@ export function BuilderClient(props: BuilderClientProps) {
   );
 }
 
-function BuilderInner({ initialProgram, save, share, previewHref, backHref, goneHref, signInHref = "/login", reload }: BuilderClientProps) {
+function BuilderInner({ initialProgram, save, saveOnHide, share, previewHref, backHref, goneHref, signInHref = "/login", reload }: BuilderClientProps) {
   const t = useStrings();
   const confirm = useConfirm();
   const altFor = useAsanaAlt();
@@ -157,7 +159,7 @@ function BuilderInner({ initialProgram, save, share, previewHref, backHref, gone
     addScheduleRow,
     removeScheduleRow,
     renameScheduleRow,
-  } = useProgram({ initial: initialProgram, save, setTitle: defaultSetTitle });
+  } = useProgram({ initial: initialProgram, save, saveOnHide, setTitle: defaultSetTitle });
 
   const [paintColor, setPaintColor] = useState<SlotColor | "clear" | null>(null);
   const [isPainting, setIsPainting] = useState(false);

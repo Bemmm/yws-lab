@@ -21,9 +21,18 @@ export type SaveResult =
   /** The server rejected the document: retrying the same content cannot help. */
   | { status: "invalid" };
 
+/** What a hide transport may answer in addition: `skipped` = not sent (too large for keepalive). */
+export type HideSaveResult = SaveResult | { status: "skipped" };
+
 export interface Autosaver<T> {
   /** Register a new snapshot (call on every edit); schedules a debounced save. */
   change(doc: T): void;
+  /**
+   * Page is hiding (pagehide / visibilitychange=hidden): send the latest snapshot with `saveOnHide` (a keepalive
+   * request that survives unload). Falls back to a normal `flush()` when a save is already in flight or the hide
+   * transport skips (document too large for keepalive).
+   */
+  flushOnHide(): Promise<void>;
   /** Save now (page hide, navigation). Resolves when nothing is pending or in flight. */
   flush(): Promise<void>;
   /** Manual retry after an error / unauthorized. */
@@ -38,6 +47,8 @@ export interface Autosaver<T> {
 
 export function createAutosaver<T>(opts: {
   save: (doc: T) => Promise<SaveResult>;
+  /** Optional keepalive transport used by `flushOnHide`. */
+  saveOnHide?: (doc: T) => Promise<HideSaveResult>;
   onState: (state: SaveState) => void;
   debounceMs?: number;
   backoffMs?: readonly number[];
@@ -62,21 +73,26 @@ export function createAutosaver<T>(opts: {
     retryTimer = null;
   }
 
-  function run(): Promise<void> {
+  function run(onHide = false): Promise<void> {
     if (disposed || stopped || !dirty) return Promise.resolve();
     if (inFlight) return inFlight;
     clearTimers();
     const snapshot = latest as T;
     opts.onState("saving");
     inFlight = (async () => {
-      let res: SaveResult | { status: "error" };
+      let res: HideSaveResult | { status: "error" };
       try {
-        res = await opts.save(snapshot);
+        res = onHide && opts.saveOnHide ? await opts.saveOnHide(snapshot) : await opts.save(snapshot);
       } catch {
         res = { status: "error" };
       }
       inFlight = null;
       if (disposed) return;
+      if (res.status === "skipped") {
+        // Too large for keepalive: nothing was sent. The page may still live (tab switch), so save normally.
+        if (dirty) void run();
+        return;
+      }
       switch (res.status) {
         case "ok":
           failures = 0;
@@ -119,6 +135,20 @@ export function createAutosaver<T>(opts: {
     return inFlight;
   }
 
+  async function flush(): Promise<void> {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
+    }
+    // Loop: an edit made during the in-flight save must also be flushed.
+    for (let i = 0; i < 5 && dirty && !stopped && !disposed; i++) {
+      const before = latest;
+      await run();
+      if (latest === before && !dirty) break;
+      if (!autoRetry || failures > 0) break;
+    }
+  }
+
   return {
     change(doc) {
       if (disposed || stopped) return;
@@ -136,18 +166,15 @@ export function createAutosaver<T>(opts: {
         void run();
       }, debounceMs);
     },
-    async flush() {
+    flush,
+    async flushOnHide() {
       if (debounceTimer) {
         clearTimeout(debounceTimer);
         debounceTimer = null;
       }
-      // Loop: an edit made during the in-flight save must also be flushed.
-      for (let i = 0; i < 5 && dirty && !stopped && !disposed; i++) {
-        const before = latest;
-        await run();
-        if (latest === before && !dirty) break;
-        if (!autoRetry || failures > 0) break;
-      }
+      if (!dirty || stopped || disposed) return;
+      if (inFlight || !opts.saveOnHide) return flush();
+      await run(true);
     },
     async retry() {
       if (stopped) return;

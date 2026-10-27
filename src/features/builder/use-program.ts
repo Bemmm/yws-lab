@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Asana } from "./asana-manifest";
-import { createAutosaver, type Autosaver, type SaveResult, type SaveState } from "./autosave";
+import { createAutosaver, type Autosaver, type HideSaveResult, type SaveResult, type SaveState } from "./autosave";
 import {
   opAddScheduleRow,
   opAddSession,
@@ -30,29 +30,33 @@ import {
 } from "./model";
 
 export * from "./model";
-export type { SaveResult, SaveState } from "./autosave";
+export type { HideSaveResult, SaveResult, SaveState } from "./autosave";
 
 export type UseProgramOptions = {
   /** Server-loaded program (the editor always runs in server mode). */
   initial: Program;
   /** Persists the full document; the wiring layer attaches the last known version. */
   save: (program: Program) => Promise<SaveResult>;
+  /** Keepalive transport for the final flush when the page hides; may answer `skipped` (document too large). */
+  saveOnHide?: (program: Program) => Promise<HideSaveResult>;
   /** Default title for new sets, e.g. "Сет 3" (localized by the caller). */
   setTitle: (n: number) => string;
 };
 
 /** Editor state: the program document plus the autosave lifecycle. All edits are pure ops from model.ts. */
-export function useProgram({ initial, save, setTitle: defaultSetTitle }: UseProgramOptions) {
+export function useProgram({ initial, save, saveOnHide, setTitle: defaultSetTitle }: UseProgramOptions) {
   const [program, setProgram] = useState<Program>(initial);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [retrying, setRetrying] = useState(false);
 
   const saveRef = useRef(save);
+  const saveOnHideRef = useRef(saveOnHide);
   const setTitleRef = useRef(defaultSetTitle);
   useEffect(() => {
     saveRef.current = save;
+    saveOnHideRef.current = saveOnHide;
     setTitleRef.current = defaultSetTitle;
-  }, [save, defaultSetTitle]);
+  }, [save, saveOnHide, defaultSetTitle]);
 
   const saverRef = useRef<Autosaver<Program> | null>(null);
   const initialRef = useRef(initial);
@@ -60,6 +64,7 @@ export function useProgram({ initial, save, setTitle: defaultSetTitle }: UseProg
   useEffect(() => {
     const saver = createAutosaver<Program>({
       save: (doc) => saveRef.current(doc),
+      saveOnHide: (doc) => (saveOnHideRef.current ? saveOnHideRef.current(doc) : saveRef.current(doc)),
       onState: (s) => {
         setSaveState(s);
         setRetrying(saverRef.current?.isRetrying() ?? false);
@@ -80,7 +85,7 @@ export function useProgram({ initial, save, setTitle: defaultSetTitle }: UseProg
 
   // Flush when the tab is hidden or the page is going away; warn while changes are unsaved.
   useEffect(() => {
-    const flush = () => void saverRef.current?.flush();
+    const flush = () => void saverRef.current?.flushOnHide();
     const onVisibility = () => {
       if (document.visibilityState === "hidden") flush();
     };

@@ -161,3 +161,40 @@ describe("autosave", () => {
     expect(saver.isDirty()).toBe(false);
   });
 });
+
+describe("autosave: flush on hide", () => {
+  it("sends the latest snapshot through the hide transport, not the normal one", async () => {
+    const normal: string[] = [];
+    const hide: string[] = [];
+    const saver = createAutosaver<string>({
+      save: async (d) => (normal.push(d), { status: "ok" }),
+      saveOnHide: async (d) => (hide.push(d), { status: "ok" }),
+      onState: () => {},
+    });
+    saver.change("a");
+    await saver.flushOnHide();
+    expect(hide).toEqual(["a"]);
+    expect(normal).toEqual([]);
+    expect(saver.isDirty()).toBe(false);
+  });
+
+  it("falls back to a normal save when the hide transport skips (too large)", async () => {
+    const normal: string[] = [];
+    const saver = createAutosaver<string>({
+      save: async (d) => (normal.push(d), { status: "ok" }),
+      saveOnHide: async () => ({ status: "skipped" }),
+      onState: () => {},
+    });
+    saver.change("big");
+    await saver.flushOnHide();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(normal).toEqual(["big"]);
+  });
+
+  it("does nothing when clean", async () => {
+    const hide: string[] = [];
+    const saver = createAutosaver<string>({ save: async () => ({ status: "ok" }), saveOnHide: async (d) => (hide.push(d), { status: "ok" }), onState: () => {} });
+    await saver.flushOnHide();
+    expect(hide).toEqual([]);
+  });
+});

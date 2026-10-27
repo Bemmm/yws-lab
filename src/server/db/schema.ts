@@ -58,6 +58,8 @@ export const plan = pgTable(
     title: text("title").notNull(),
     document: jsonb("document").notNull(),
     version: integer("version").notNull().default(1),
+    /** Client-generated id of the last applied save; lets a client recognise its own write after a lost response. */
+    lastSaveId: text("last_save_id"),
     shareToken: text("share_token").unique(),
     shareEnabledAt: tstz("share_enabled_at"),
     createdAt: createdAt(),

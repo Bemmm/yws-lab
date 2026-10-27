@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getDictionary } from "@/i18n/server";
 import { format } from "@/i18n/format";
 import { getCurrentAccount, requireAccount } from "@/server/auth/session";
+import { parseSaveMeta } from "./save-request";
 import { createPlan, deletePlan, disableShare, duplicatePlan, enableShare, savePlan } from "./service";
 
 /**
@@ -27,11 +28,13 @@ function logFailure(op: string, id: string, err: unknown) {
   console.error(`plans.${op} failed`, { id, code });
 }
 
-export async function savePlanAction(id: string, document: unknown, expectedVersion: number): Promise<SavePlanResult> {
+export async function savePlanAction(id: string, document: unknown, expectedVersion: number, meta?: unknown): Promise<SavePlanResult> {
   const account = await getCurrentAccount();
   if (!account) return { status: "unauthorized" };
+  const parsed = parseSaveMeta(meta);
+  if (parsed === null) return { status: "invalid" };
   try {
-    const res = await savePlan(account.id, id, document, expectedVersion);
+    const res = await savePlan(account.id, id, document, expectedVersion, parsed);
     if (res.status === "ok") return { status: "ok", version: res.version, updatedAt: res.updatedAt.toISOString() };
     return res;
   } catch (err) {
