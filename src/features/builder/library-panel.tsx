@@ -78,7 +78,7 @@ function LibraryItem({ asana, onClick }: { asana: Asana; onClick: () => void }) 
       {...pointerListeners}
       aria-label={alt}
       title={`${alt} — ${t.library.itemHint}`}
-      className={`aspect-square cursor-grab [contain-intrinsic-size:100px] [content-visibility:auto] rounded-sm bg-bg-page p-1.5 hover:ring-2 hover:ring-ink active:cursor-grabbing ${isDragging ? "opacity-30" : ""}`}
+      className={`aspect-square cursor-grab [contain-intrinsic-size:100px] [content-visibility:auto] rounded-sm bg-asana-bg p-1.5 hover:ring-2 hover:ring-ink active:cursor-grabbing ${isDragging ? "opacity-30" : ""}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- local school-owned SVGs */}
       <img src={asana.src} alt="" width={88} height={88} draggable={false} loading="lazy" decoding="async" className="pointer-events-none h-full w-full select-none object-contain" />

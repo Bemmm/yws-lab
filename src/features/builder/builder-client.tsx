@@ -468,7 +468,7 @@ function BuilderInner({ initialProgram, save, saveOnHide, share, previewHref, ba
                 />
                 <span
                   aria-hidden="true"
-                  className="absolute left-1/2 top-1/2 flex h-9 w-3.5 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-[3px] rounded-pill bg-white shadow-sm ring-1 ring-toggle-off"
+                  className="absolute left-1/2 top-1/2 flex h-9 w-3.5 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-[3px] rounded-pill bg-bg-card shadow-sm ring-1 ring-toggle-off"
                 >
                   {[0, 1, 2].map((i) => (
                     <span key={i} className="size-[3px] rounded-full bg-ink-muted" />
@@ -506,7 +506,7 @@ function BuilderInner({ initialProgram, save, saveOnHide, share, previewHref, ba
         {/* Library drop fades in place; slot reorder uses the default settle animation. */}
         <DragOverlay modifiers={[snapCenterToCursor]} dropAnimation={lastDragSource === "library" ? libraryDropAnimation : undefined}>
           {dragAsana ? (
-            <div className="size-20 cursor-grabbing rounded-sm bg-white p-1.5 shadow-float ring-1 ring-line">
+            <div className="size-20 cursor-grabbing rounded-sm bg-asana-bg p-1.5 shadow-float ring-1 ring-line">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={dragAsana.src} alt={altFor(dragAsana.id)} draggable={false} className="h-full w-full object-contain" />
             </div>
@@ -575,7 +575,7 @@ function PaintToolbar({
           aria-label={t.paint.removeColor}
           aria-pressed={paintColor === "clear"}
           title={t.paint.removeColor}
-          className={`${swatch} border-2 border-dashed border-ink-muted bg-white text-ink-2 ${paintColor === "clear" ? "scale-110 ring-2 ring-ink ring-offset-2" : "hover:scale-105"}`}
+          className={`${swatch} border-2 border-dashed border-ink-muted bg-bg-card text-ink-2 ${paintColor === "clear" ? "scale-110 ring-2 ring-ink ring-offset-2" : "hover:scale-105"}`}
         >
           <XIcon size={10} />
         </button>

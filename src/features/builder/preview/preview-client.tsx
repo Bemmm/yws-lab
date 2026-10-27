@@ -70,7 +70,7 @@ export function PreviewClient({
   const hasContent = !!program && hasProgramContent(program);
 
   return (
-    <div className="min-h-dvh bg-bg-page print:bg-white">
+    <div className="min-h-dvh bg-bg-page print:bg-bg-card">
       {/* Zero @page margin drops the browser's print header/footer; the views keep their own padding. */}
       <style>{`@media print { @page { margin: 0; } }`}</style>
       <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 bg-bg-card/95 px-4 py-2 backdrop-blur print:hidden sm:px-6">
@@ -148,7 +148,7 @@ function PreviewSchedule({ program }: { program: Program }) {
                     const color = row[d] ?? null;
                     return (
                       <td key={d} className="p-0">
-                        <div style={bandStyle(color)} className={`${cell} ${color ? "border-transparent" : "border-ink/25 bg-white"}`} />
+                        <div style={bandStyle(color)} className={`${cell} ${color ? "border-transparent" : "border-ink/25 bg-bg-card"}`} />
                       </td>
                     );
                   })}
@@ -168,7 +168,7 @@ function PreviewSchedule({ program }: { program: Program }) {
                     const color = rowCells[d] ?? null;
                     return (
                       <td key={d} className="p-0">
-                        <div style={bandStyle(color)} className={`${cell} ${color ? "border-transparent" : "border-ink/25 bg-white"}`} />
+                        <div style={bandStyle(color)} className={`${cell} ${color ? "border-transparent" : "border-ink/25 bg-bg-card"}`} />
                       </td>
                     );
                   })}
@@ -187,7 +187,7 @@ function TableView({ program }: { program: Program }) {
   return (
     <div
       style={EXACT_PRINT_COLORS}
-      className="mx-auto flex max-w-4xl flex-col gap-9 bg-white px-6 py-10 text-ink sm:px-10 lg:my-4 lg:rounded-xl print:my-0 print:rounded-none"
+      className="mx-auto flex max-w-4xl flex-col gap-9 bg-bg-card px-6 py-10 text-ink sm:px-10 lg:my-4 lg:rounded-xl print:my-0 print:rounded-none"
     >
       {(program.title || program.description) && (
         <header className="flex break-inside-avoid flex-col gap-2">
@@ -220,7 +220,7 @@ function Grid({ cells }: { cells: TableCell[] }) {
         <Fragment key={ri}>
           <div className="grid grid-cols-6">
             {row.map(({ slot, id }) => (
-              <div key={id} className="relative aspect-[4/3] border-b border-r border-ink/30">
+              <div key={id} className={`relative aspect-[4/3] border-b border-r border-ink/30 ${slot?.asana ? "bg-asana-bg" : ""}`}>
                 {slot?.asana && (
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -265,7 +265,7 @@ function CardsView({ program }: { program: Program }) {
         return (
           <section key={s.id} className="flex break-inside-avoid flex-col gap-3 rounded-xl bg-bg-card p-5 print:p-3">
             <header className="flex items-center gap-2.5">
-              <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-pill bg-ink text-micro text-white tabular-nums">{i + 1}</span>
+              <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-pill bg-action-bg text-micro text-action-fg tabular-nums">{i + 1}</span>
               <h3 className="min-w-0 truncate text-h3">{s.title}</h3>
             </header>
             {s.description && <p className="whitespace-pre-line rounded-lg bg-sand px-4 py-3 text-sand-ink">{s.description}</p>}
@@ -298,12 +298,12 @@ function CardCell({ slot }: { slot: NonNullable<Slot> }) {
   const segments = slot.segments ?? [];
   const style = bandStyle(slot.color);
   return (
-    <div className="overflow-hidden rounded-md bg-white ring-1 ring-line">
-      <div className="relative aspect-square bg-bg-page">
+    <div className="overflow-hidden rounded-md bg-bg-card ring-1 ring-line">
+      <div className="relative aspect-square bg-asana-bg">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={asana.src} alt={altFor(asana.id)} draggable={false} className="absolute inset-0 h-full w-full select-none object-contain p-3" />
         {slot.side && (
-          <span className="absolute left-1.5 top-1.5 inline-flex size-6 items-center justify-center rounded-sm bg-white text-micro ring-1 ring-line">{slot.side}</span>
+          <span className="absolute left-1.5 top-1.5 inline-flex size-6 items-center justify-center rounded-sm bg-bg-card text-micro ring-1 ring-line">{slot.side}</span>
         )}
       </div>
       {(segments.length > 0 || style) && (

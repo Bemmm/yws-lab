@@ -44,3 +44,6 @@ Hot paths are indexed: `plan(owner_id, updated_at)`, `enrollment(cohort_id, stud
 - First request after a Render cold start is slow (tens of seconds on the free plan); the health check keeps deploys honest,
   nothing keeps the instance warm.
 - Rate limiting for share links is in-memory per instance (fine for one instance).
+
+## Dark mode
+- Dark mode (YWSLAB-73) follows the OS only; `scripts/check-contrast.mjs` (part of `npm run lint`) enforces WCAG AA for every text/background token pair in both themes, and the dark Playwright projects run axe at 1440 and 375.

@@ -28,7 +28,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-5 bg-bg-page p-4">
       <Card className="w-full max-w-sm items-center text-center">
-        <Logo alt={t.app.name} size={96} variant="ink" />
+        <Logo alt={t.app.name} size={96} />
         <h1 className="text-h2">{t.auth.loginTitle}</h1>
         <p>{t.auth.loginHint}</p>
         {errorText ? (

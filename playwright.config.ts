@@ -30,12 +30,22 @@ export default defineConfig({
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
-  projects: viewports.map((v) => ({
-    name: v.name,
-    use: { browserName: "chromium" as const, viewport: { width: v.width, height: v.height } },
-    // Full user journeys run once (desktop); accessibility + screenshots run at every viewport.
-    testMatch: v.name === "desktop-1440" ? /.*\.spec\.ts/ : /a11y\.spec\.ts/,
-  })),
+  projects: [
+    ...viewports.map((v) => ({
+      name: v.name,
+      use: { browserName: "chromium" as const, viewport: { width: v.width, height: v.height } },
+      // Full user journeys run once (desktop); accessibility + screenshots run at every viewport.
+      testMatch: v.name === "desktop-1440" ? /.*\.spec\.ts/ : /a11y\.spec\.ts/,
+    })),
+    // Dark theme (follows the OS setting): axe + screenshots at desktop and mobile; shots are named `…-dark__…`.
+    ...viewports
+      .filter((v) => v.name !== "tablet-768")
+      .map((v) => ({
+        name: `${v.name}-dark`,
+        use: { browserName: "chromium" as const, colorScheme: "dark" as const, viewport: { width: v.width, height: v.height } },
+        testMatch: /a11y\.spec\.ts/,
+      })),
+  ],
   webServer: {
     command: "npm run build && npm run start",
     url: `${BASE_URL}/api/health`,

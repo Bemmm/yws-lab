@@ -153,7 +153,7 @@ export function ScheduleTable({
                             onClick={(e) => keyboardToggle(e, sess.id, d, color, SCHEDULE_FILL)}
                             onKeyDown={onCellKeyDown}
                             style={bandStyle(color)}
-                            className={`${CELL} ${color ? "border-transparent" : "bg-white hover:bg-black/5"}`}
+                            className={`${CELL} ${color ? "border-transparent" : "bg-bg-card hover:bg-hover"}`}
                           />
                         </td>
                       );
@@ -198,7 +198,7 @@ export function ScheduleTable({
                             onClick={(e) => keyboardToggle(e, r.id, d, color, r.color)}
                             onKeyDown={onCellKeyDown}
                             style={bandStyle(color)}
-                            className={`${CELL} ${color ? "border-transparent" : "bg-white hover:bg-black/5"}`}
+                            className={`${CELL} ${color ? "border-transparent" : "bg-bg-card hover:bg-hover"}`}
                           />
                         </td>
                       );
