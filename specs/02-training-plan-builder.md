@@ -1,92 +1,200 @@
 # YWS-Lab 1.0 — Training plan builder spec
 
 - ID: f7b9e0ac-43b2-450e-919b-290a39e664ae
-- Version: 1
-- Updated: 2026-10-27T09:03:07.858953Z
+- Version: 2
+- Updated: 2026-10-27
 - Linked tasks: None
 
 ---
 
-# YWS-Lab 1.0 — Training plan builder specification
+# YWS-Lab 1.0 — Training program builder specification
 
-Status: adapted product specification, 27 October 2026. Source: [Papaya PAP-8](https://tasksurfing.app/?document=a204d9a0-1a0a-4b20-afff-499a5cdc5307). Shared identity/access rules: [YWS-Lab shared spec](https://tasksurfing.app/?document=247c49d2-5916-4848-8b94-4bab36ed3f1a).
+Status: product specification, 27 October 2026. Rewritten to match the real Papaya workout builder that is being ported (not the older PAP-8 document). Shared identity/access rules: `01-shared-access.md`. Release gates: `07-release-decisions-and-acceptance.md`. Visuals: `04-design-system.md`.
+
+Convention: "Code:" = behavior verified in the Papaya source. "(assumed)" = ambiguous or missing in code; the reading given is the one to implement. "Gap" = code does not do it; listed as a 1.0 requirement.
 
 ## 1. Purpose and scope
-Every signed-in account holder can assemble a yoga training plan, keep it in a private library, preview/print it, and optionally share a read-only link. No YWS-Lab course enrollment, student account, lesson booking or payment is needed. A plan belongs to its creator; other signed-in accounts cannot browse or edit it.
+Every signed-in account (Telegram login) has a private library of **programs** in Postgres. A program is a yoga practice plan: ordered **sets**, each a row of **slots** holding an asana picture, breath counts, a colour and a side marker, plus an optional day-by-day **schedule grid**. The owner can preview, print, duplicate, delete, and publish a read-only link.
 
-This spec keeps PAP-8's structured editor, curated pose catalog, autosave, library, share links and print view. It removes all Papaya lesson attachment, historical lesson snapshot, student-directory and confirmed-email behavior. An account can create a plan immediately after Telegram sign-in.
+The Papaya builder UI and data model are ported as-is: the `BuilderClient` core is reused with dependency injection (section 12). Interaction behavior is kept; visuals are restyled to the YWS Lab design system (ink primary actions, Onest). Dropped: assigning programs to students, student accounts/views, view/download analytics, Papaya breadcrumbs/icons/branding.
 
-## 2. Data model and rules
-A **plan** has an owner, title, optional description, ordered sections, version, create/update timestamps and optional active share token. A **section** has an optional title and ordered exercises. An **exercise** is either a catalog pose reference or a custom text entry; it has optional duration *or* breath count, plus an optional note. Plans are separate from course progress.
+## 2. Data model
+One program = one JSON document (`Program`) plus row metadata. Types are from `use-program.ts`.
 
-| Field | Rule |
+| Entity / field | Definition and limits |
 |---|---|
-| Plan title | Required, 1–120 characters; new plan starts as “Нова програма”. Blank edits are not saved. |
-| Description | Optional, up to 1,000 characters. |
-| Section title | Optional, up to 80 characters; blank displays as “Частина N”. |
-| Custom exercise title | Required, 1–80 characters. |
-| Duration | Optional, 5–1,800 seconds in increments of 5. |
-| Breaths | Optional, integer 1–99. Setting duration clears breaths and vice versa. |
-| Exercise note | Optional, up to 300 characters. |
-| Limits | At least one section; at most 20 sections and 200 exercises per plan. No fixed limit on number of plans per account. |
+| `Program` | `id`, `title`, `description?`, `sessions: Session[]`, `schedule?` |
+| `Program.title` | Free text; code has no max and no blank guard. Server cap 120 chars (assumed); blank is stored and shown in the library as "Без назви" / "Без названия" (assumed) |
+| `Program.description` | Free text, auto-grow textarea above the sets; empty string stored as absent. Server cap 5,000 chars (assumed) |
+| `Session` ("set") | `id`, `title`, `description?`, `slots: Slot[]`, `slotIds: string[]` (same length as `slots`, stable per slot, travels with the slot on reorder) |
+| Set count | Min 1 (last set cannot be removed). No cap in code; server cap 50 (assumed) |
+| Set title | Free text, new sets named "Сет N" (same in UA and RU); blank allowed, schedule falls back to "С{n}". Cap 60 (assumed) |
+| Slots per set | `DEFAULT_SLOTS = 6`, `MIN_SLOTS = 1`, `MAX_SLOTS = 36` |
+| `Slot` | `null` or `{ asana?, segments?, color?, side? }`. A slot with only `segments` (breath rhythm laid out before any asana) is valid. Normalization turns a slot with no asana, no segments and no color into `null` |
+| `SlotAsana` | `{ id, src, label }` snapshot, e.g. `L1/frame-1973.svg`, `/asanas/L1/frame-1973.svg`, `Frame 1973`. Denormalized so programs survive catalog changes |
+| `Segment` | `{ type: 'S' \| 'D', count }`. `S` = static (square), `D` = dynamic (triangle) |
+| `MAX_SEGMENTS` | `3` per slot. UI count clamp 1-999 (input takes up to 3 digits); save drops segments with `count <= 0` and slices to 3 |
+| `SlotColor` | Closed enum: `amber`, `emerald`, `orange`, `sky`, `violet`, `rose`. Keys are stable; unknown keys render as no colour. Colour is only settable on a slot that has an asana |
+| `SlotSide` | Free string. UI input `maxLength = 3`; `L` and `R` quick toggles; stored trimmed, normalizer slices to 4. Server accepts 0-4 chars (assumed). Only settable on a slot with an asana |
+| `Schedule` | `{ enabled, days, cells: Record<rowKey, (SlotColor\|null)[]>, rows?: ScheduleRow[] }` |
+| `days` | `SCHEDULE_MIN_DAYS = 1`, `SCHEDULE_MAX_DAYS = 31`, default 7 |
+| `ScheduleRow` | `{ id, label, color }`. Label max 24 chars. Colour drawn from `emerald, sky, violet, rose` (never amber/orange), random without repeats until the pool is exhausted |
+| `cells` keys | Set id for set rows (filled with `orange` on toggle) or `ScheduleRow.id` for activity rows (filled with the row colour). Shrinking `days` trims cells; removing a row deletes its cells |
 
-Catalog poses may repeat within a plan. The library summary is “N вправ · M хв” plus “K за диханнями” when applicable. M sums only timed exercises, rounds to the nearest minute with half up, and is at least 1 when any timed exercise exists. Individual durations display without zero parts, for example “45 с”, “1 хв 30 с”, “2 хв”.
+Server validation on every save (assumed, required because the client is untrusted): shape and enum checks above; `slots.length == slotIds.length`; `asana.id` must exist in the catalog manifest and `asana.src`/`label` are overwritten from the manifest, never trusted from the client; document size <= 256 KB; schedule cell arrays <= `days`.
 
-## 3. Plan editor
-1. **New plan** immediately creates a plan with a default title and one empty section, then opens the editor.
-2. The user edits title/description inline; adds sections; adds catalog poses by click or drag; adds a custom exercise; enters duration or breaths and notes.
-3. The user can reorder exercises within/between sections and reorder sections by drag. Every drag action also has keyboard/touch-accessible **Move up/Move down** actions. Duplicate exercise places a copy immediately after the original.
-4. Deleting an exercise needs no confirmation. Deleting a nonempty section confirms the count of exercises removed. The only remaining section cannot be deleted.
-5. The “current section” is the last section the user interacted with; a catalog click appends there. On first open it is the first section. When that section is deleted, select the previous one, otherwise the next.
-6. Reaching a limit disables the relevant add action with an explanatory message. Invalid fields show an inline error and do not block valid changes elsewhere.
+Row metadata (not in the document): owner account id, `version` (integer, starts at 1), created/updated timestamps, optional `share_token`.
 
-### Catalog
-The curated catalog is common to all accounts. Each active pose has an image when licensed, a stable code, localized name(s) and difficulty 1–6. The panel supports search by displayed name and difficulty filter; shows 60 at a time with **Show more**. The catalog is maintained by an operator/content process, not edited by users. Custom exercises have no image.
+### Asana catalog
+- 1,239 SVGs owned by the school (rights confirmed), shipped as static assets under `/asanas/{L1..L6,Other}/frame-NNNN.svg`; manifest `asana-manifest.ts` (auto-generated by `scripts/gen-asana-manifest.py`).
+- Counts: L1 98, L2 168, L3 190, L4 230, L5 246, L6 303, Other 4. Type `AsanaLevel = 'L1'|...|'L6'|'Other'`.
+- Labels are "Frame NNNN" only; there are no real names. **Naming asanas and search by name are out of scope for 1.0.**
+- Code today also searches by substring of label/id. 1.0 removes the search box (decision); level filter stays.
 
-A pose removed from discovery remains in existing plans. If image rights are withdrawn, its image disappears in the editor, preview, shared page and print; the text name remains. A catalog entry must not be published until the school confirms rights for in-app display, shared pages and personal printing. A missing image never prevents reading a plan.
+## 3. Library screen
+Papaya has only a card grid (no search, no duplicate). 1.0 library:
+- Route lists the account's programs, newest `updated_at` first. Card: strip of the first 4 asana images (empty cells show dashed placeholders), title, "N сетів · filled/total асан" (sets count, filled slots over total slots), updated date, "access on" badge when a share link is active. Whole card opens the editor.
+- Actions: **New program** (creates an empty program with one set of 6 empty slots, opens editor), **Preview**, **Duplicate**, **Delete**. Empty state with a create button.
+- Duplicate (new vs Papaya): copies the document, new ids, no share token, title "{title} (копія)" / "(копия)" truncated to fit the title cap, appears on top. Opens the library, not the editor (assumed).
+- Delete: confirmation naming the program ("Видалити «title»? Дію не можна скасувати."). Irreversible; also revokes the share link.
+- Title search and "Show more" (24 per page) kept from the previous spec (assumed; not in Papaya).
+- Opening the editor without an id goes to the library (Papaya instead opened the latest program or created one; dropped).
+- Another account's program id returns the same response as a missing one.
 
-### Autosave and concurrency
-There is no Save button. Every valid change queues an autosave; the UI shows saving, “Saved at …”, or a retry state. During a network outage, the current edit remains in the browser and retries when possible. Navigation with pending unsaved changes warns the user. The server uses a plan version/conditional update: a stale tab cannot overwrite a newer version. The stale tab reloads the latest plan and displays a conflict message; at most its last uncommitted change may be lost. Returning to a tab refetches the latest version. If another tab deleted the plan, editing stops and a clear return-to-library action appears.
+## 4. Editor
+Layout: two panels. Left: header + program description + optional schedule + stack of set cards. Right: asana catalog. Below `lg` (1024 px) the catalog is a bottom sheet with a grab handle (height 92 px to 85 vh, starts at 38 vh); the paint dock sits above it. On desktop the catalog width is drag-resizable (280-760 px, default 360).
 
-## 4. Private library
-List the account's plans by last change, newest first. Show title, exercise/time summary, last change time and whether a share link is active. Search by title; show 20 at a time with **Show more**. Empty library and no-search-results states have clear creation/reset actions.
+### 4.1 Header
+Inline program title input; autosave indicator (section 6); **Schedule** switch; **Share** (section 8); **Preview** (opens in a new tab); **Clear**; **+ Set**. Breadcrumb is replaced by a plain back link to the library.
 
-Actions: open editor, preview, duplicate, manage link, delete. Duplication copies description/sections/exercises but creates a new owner-local plan with no share token; title becomes “{title} (копія)” and truncates the source part to fit 120 characters. Delete confirms and is irreversible in the UI. Deleting a plan revokes its active link. There are no lesson references to warn about.
+### 4.2 Program and set text
+Program description (auto-grow textarea) above the sets. Each set has a title input, a numbered badge, an auto-grow description ("repeat x3, pause 3/6/9 breaths"), a slots counter `filled/total` with -/+ buttons, a remove button (hidden when it is the only set) and a drag handle.
 
-## 5. Preview, sharing and print
-Preview uses the same content renderer for the owner and public link. It shows title, description, sections, exercise names/images, duration or breaths, notes and summary. The owner gets Edit and Link actions; the public page has no editing controls. Browser print removes navigation and buttons and keeps section/exercise order readable. PDF saving uses the browser's print function.
+### 4.3 Sets
+- **Add set**: appends "Сет N" with 6 empty slots.
+- **Remove set**: no confirmation in code, even if filled. 1.0: confirm when the set contains any asana (assumed improvement; no undo exists).
+- **Reorder sets**: drag the handle (vertical sortable; pointer only).
+- **Clear program**: no confirmation in code; resets to a single empty set, keeping id and title and dropping description and schedule. 1.0: confirm (assumed).
+- **Slot count**: `-` removes the last slot, `+` appends an empty one, within 1..36. Shrinking asks to confirm only when the last slot is non-null (this includes a breath-only slot).
 
-A plan can have one active secret link. Creating a link requires at least one exercise. A user can copy or revoke it. A revoked or deleted plan returns a generic “Link no longer works” page; creating a new link produces a different token. The public link requires no account and shows the *current* plan. It contains no student/course information and does not reveal the owner's Telegram username, phone or internal ID. Display only an optional owner display name if the owner explicitly opts in; default is no owner identity.
+### 4.4 Adding asanas
+- **Click** a catalog item: puts it into the first slot without an asana, scanning sets top to bottom, slots left to right; keeps that slot's segments, colour and side. If every slot is filled, appends a slot to the last set (cap 36); if that is full too, nothing happens and no message is shown (gap: show a "set is full" message).
+- **Drag** a catalog item onto a slot (pointer sensor, 5 px activation distance; drop target is the slot under the pointer): sets the asana, replacing any existing one and keeping its segments/colour/side. Replace hint shown over a filled target.
+- Catalog: tabs All, L1-L6, Other (Other is localized); grid auto-fills at 100 px minimum; all matching items rendered with lazy images (no pagination); header shows the filtered count; empty result shows "not found".
 
-Tokens must be high entropy, stored hashed, checked on each request, excluded from search indexing, analytics, access logs and referrers to third-party pages. Public responses are not served from shared caches. Revocation blocks new requests immediately; already downloaded/printed copies cannot be recalled. A guessed, revoked or nonexistent link gives the same outward response.
+### 4.5 Slots
+- **Move**: drag a filled slot. Within a set it is a reorder (others slide). Across sets it swaps with the target slot (an empty target works as a move). Empty slots are not draggable.
+- **Clear asana** (x on the slot): removes the asana; if the slot has segments they stay (colour is dropped); otherwise the slot becomes empty. Button is hover-revealed in code (gap: must be visible on focus and on touch).
+- **Side**: control at top-left of a filled slot: `L` toggle, free-text middle field (max 3 chars, placeholder "-"), `R` toggle. Always visible once a side is set, otherwise on hover or focus-within.
+- **Breath segments**: the footer row of every slot (also empty ones) shows `+ дихання` or chips like `[square]3 [triangle]3`. Click opens a popover (dialog): add segment (disabled at 3), type toggle S/D, count stepper -/+ with a numeric text field (1-999), remove segment, **Clear**, **Done**. Opens with one `S-3` draft when empty. Esc or outside click closes without applying; `Done` or `Enter` applies; `Clear` applies empty. Setting segments on an empty slot is allowed. On mobile the popover is centered and fixed.
+- **Colour (paint mode)**: floating dock with 6 swatches and an eraser; pick one, then click or drag across filled slots to paint their footer (colour only changes `slot.color`); `Done` leaves the mode. In paint mode slot dragging, side and clear controls are off and the segments popover cannot open. The dock hides while a popover is open. Empty slots cannot be painted.
+- Known code quirks to decide before porting (assumed: fix, one-line changes): clearing all segments on a filled slot also drops `side`; clearing the asana on a slot with segments keeps `side` on an asana-less slot.
 
-## 6. Ownership, privacy and reliability
-All editor, library, duplicate, delete and link-management calls check plan owner on the server. Access to another user's plan by direct URL/API yields the same response as a missing plan. Anonymous access exists only through the active share token. Progress data never appears in a plan or its public page.
+### 4.6 Schedule grid (optional)
+Header switch shows/hides it (data is kept when hidden). Table: columns D1..Dn (stepper 1-31), one row per set (live titles, fallback "С{n}"), plus custom activity rows (`+ Активність`, label input max 24, remove x on the right edge). Cells toggle by pointer-down; dragging continues the action decided by the first cell (empty -> fill, filled -> erase). Set rows paint orange, activity rows paint their row colour. Empty hint when there are no sets. Shown in preview and print when enabled and at least one set exists.
 
-Plan saves and reorder operations are atomic. On failed save, preserve the edit on screen and explain retry status. Record creation/deletion/link issuance/revocation and save errors without logging share tokens or user-authored notes. Prefer idempotent retry for mutations.
+### 4.7 What does not exist in the code
+No undo/redo, no multi-select, no duplicate-set or copy/paste slot, no keyboard shortcuts (only Esc/Enter in the segments popover), no drag-and-drop between programs, no max on sets.
 
-## 7. UI and quality
-- Responsive editor: catalog alongside plan on wide screens and as a bottom panel on narrow screens. On mobile, click-to-add and action-menu reordering are fully usable without drag.
-- All controls work with keyboard and have visible focus. Images have text alternatives, errors and save status are announced, and meaning never depends on color alone. Target WCAG AA contrast.
-- Preview/public page requires no horizontal scrolling at 375 px. Browser support: current Chrome, Safari, Firefox and Edge.
-- Performance acceptance on the agreed test device/network: readable plan within 2 seconds for 200 exercises; local reorder feedback within 100 ms; catalog search p95 within 300 ms for 2,000 poses. Record test conditions with results.
-- UI copy follows the shared spec. User-authored notes and custom exercise names are displayed as entered. Catalog names resolve by active locale (uk, ru) with Ukrainian as fallback.
+### 4.8 Accessibility: 1.0 requirements
+The code is pointer-first (`PointerSensor` only). Implementing these is part of acceptance, not optional:
+1. Slot and set reordering by keyboard: dnd-kit `KeyboardSensor` (Space/arrows/Enter/Esc) with screen-reader announcements, or explicit **Move earlier/later** and **Move to set...** actions in a slot menu. Click-to-add already works by keyboard (catalog items are buttons) and stays the primary non-drag path.
+2. Paint mode and schedule cells must be operable by keyboard (cells react to `click`/Space/Enter, not only `pointerdown`; paint applies on slot activation). Arrow-key navigation inside the schedule table is recommended.
+3. Segments popover: focus moves in on open, is trapped, returns to the slot on close; `Enter` must not trigger when focus is on a button (today it saves from anywhere).
+4. Slot clear button and side control visible on keyboard focus and on touch.
+5. Image `alt` is not "Frame 1973": use a localized "Асана {level} №{frame}" (assumed). Colours always have text names (`aria-label`), colour is never the only carrier of data in the editor.
+6. Catalog resize handle and sheet handle are decorative for pointer users; keep `role="separator"` only if keyboard-resizable, else remove.
+7. Visible focus everywhere; target size >= 44 px on touch for slot controls; contrast AA.
 
-## 8. Release 1.0 exclusions
-No lesson attachment, student-specific assignment, attendance, payment, workout timer/audio, completion tracking, health-condition filters, shared school-wide plan library or editing another owner's plan. Future platform integration does not change current plan ownership.
+## 5. Confirmations
+All confirmations use the design-system dialog instead of `window.confirm`: delete program, remove non-empty set, shrink with filled last slot, clear program. Texts live in i18n files.
 
-## 9. Acceptance checklist
-- [ ] New account signs in with Telegram, creates a plan and sees it on a later device/session.
-- [ ] Title, sections, exercises, duration/breath exclusivity, notes and all limits behave as section 2; summary arithmetic matches examples.
-- [ ] Catalog search/filter/add, custom exercise, duplicates and order changes work with pointer, touch and keyboard.
-- [ ] Autosave shows status; temporary outage preserves edits; stale tab cannot overwrite a newer version; deleted-in-other-tab editor stops saving.
-- [ ] Library search, pagination, duplicate and delete work only on the owner's plans.
-- [ ] Empty plan cannot create a link; nonempty plan can create, copy and revoke one active link; old tokens stay invalid after regeneration/deletion.
-- [ ] Public page works without sign-in but contains no private account, student or course data; print output is readable.
-- [ ] Another signed-in user cannot read or mutate a private plan by URL/API.
-- [ ] Image failure or revoked image rights leaves text readable in every view.
-- [ ] Mobile and accessibility checks in section 7 pass.
+## 6. Autosave and conflicts
+Code: `useProgram` runs in server mode when `save` is injected. Every change sets state `saving`, restarts a 1,500 ms debounce (`AUTOSAVE_DEBOUNCE_MS`), then calls `save(program)` with the full document (full replace). The first render after load does not save. A response `{status:'ok'}` or `{ok:true}` gives `saved`; anything else or a throw gives `error`; responses of superseded saves are ignored. Indicator `role="status"` shows Saving / Saved / Not saved. There is no retry, no versioning, no unload warning, and the cleanup effect cancels a pending debounce on unmount.
 
-## 10. Product assumptions recorded for 1.0
-Catalog, share links and print are included because the product owner asked to carry over PAP-8. If a later scope decision removes them, update this spec and the Release 1.0 stories together before implementation. Catalog content and image rights must be supplied/cleared before launch; code alone cannot satisfy that acceptance item.
+1.0 requirements on top:
+- **Versioning**: each program has an integer `version`. The wiring layer keeps the last known version and sends it with each save. Server updates only when `version` matches (conditional update, atomic) and returns the new version. A mismatch returns `conflict`; the stale tab never overwrites a newer save.
+- **Conflict UI**: `SaveState` gains `conflict` (and `gone` for a program deleted elsewhere). On `conflict`, autosave stops, a banner says a newer version exists, with **Reload latest** (discards local unsaved edits; no merge in 1.0). On `gone`, editing stops with a link to the library. On `unauthorized`, keep the edits on screen and show a sign-in prompt.
+- **Retry**: on network error keep the latest snapshot and retry with backoff (2 s, 5 s, 15 s, then every 30 s) and a manual **Retry** button; the indicator shows the retry state.
+- **No lost tail**: flush a pending save on `visibilitychange`/`pagehide` and before in-app navigation; warn with `beforeunload` while changes are unsaved.
+- Mutations are idempotent: a retry of the same (id, baseVersion, content) must not create a conflict with itself (assumed: compare content hash on version mismatch).
+- Server never logs document text; logs save errors with program id only.
 
+## 7. Preview and print
+Page `preview?id=` (owner, signed in; separate page without app shell, opened in a new tab). Without access it shows the same empty state as a missing program.
+- Header (hidden in print): back link to the editor, title, view toggle, print button. The view toggle is not persisted. Papaya has two views, "YWS Original" (dense bordered table) and "Papaya" (cards). 1.0 keeps both, renamed to neutral "Table" and "Cards" (assumed; open question whether to keep Cards).
+- Shows program title and description, schedule (read-only), then each set: title, description, slots.
+- **Table view**: per set, rows of 6 columns; each row has an image row (side letter top-right) and a band row with the colour and breath codes in the form `S-3 D-3 S-3`. Slots are cut after the last non-empty one and padded to a full row. A set with no content and no description is skipped.
+- **Cards view**: only filled slots, 2/3/6 columns by width (6 in print), side badge, bottom bar with colour and segment shapes + counts.
+- Empty state when no asana, no description and no schedule: "Programme is empty - add asanas in the builder".
+- **Print / Download PDF**: the same button, `window.print()`; the browser's "Save as PDF" is the PDF path. Print CSS: `@page { margin: 0 }` to drop browser headers/footers, forced exact colours, header hidden, sets avoid page breaks inside.
+- Neutral, not Papaya, wordmark on the public variant (section 8). No timer, no analytics.
+
+## 8. Share link
+Code: header **Share** button. First click calls `enable(programId)`; on `status === 'ok'` stores the token and opens a popover with the URL `${origin}/w/${token}`, a selectable read-only field, **Copy** (clipboard; field is the fallback), and **Stop access** (`disable`). With an existing token the button toggles the popover. Outside click closes it. `enable` is idempotent (returns the existing token). Papaya allows sharing an empty program.
+
+1.0:
+- Link `/w/{token}` is public, read-only, no account, always shows the current document. Same renderer as preview with `publicView` (no back link, YWS Lab wordmark, no edit controls).
+- Token: >= 128 bits, URL-safe, unique. Stored as-is in a unique column (assumed: the owner UI must be able to show the URL again after reopening, which rules out hashing; alternative is hash + show-once). Never logged.
+- Disable revokes immediately: the next request for the old token fails. Enabling again issues a different token (assumed).
+- Revoked, invalid, malformed, or deleted-program tokens return the same neutral page (generic "Link is not available", HTTP 404): no title, no owner, no hint whether the token ever existed.
+- Public response: `Cache-Control: no-store`, `noindex`, `Referrer-Policy: no-referrer`, no third-party scripts, no owner identity, no Telegram data. Rate-limit token lookups.
+- Enable/disable failures must show an error (Papaya ignores them and always clears the token on stop; gap).
+- Revocation cannot recall downloaded or printed copies.
+
+## 9. i18n
+- Languages: Ukrainian (default) and Russian, switchable per account. All builder, preview, library and public-page strings move into the app's i18n files.
+- `strings.tsx` already provides the `workoutBuilder` dictionary in Russian; **Ukrainian must be written** with the same keys. Missing keys fall back to Ukrainian.
+- Strings hard-coded in Russian today and to be extracted: default program title ("Новая программа"), set names ("Сет N"), save indicator labels, delete confirmation, library card suffixes ("сет.", "доступ"), view tooltips. Counts use plural-aware formatting.
+- Defaults (new program title, new set names) use the account's language at creation time and are stored as text; they do not retranslate.
+- User text (titles, descriptions, side marks, activity labels) is shown exactly as entered. Dates use the school timezone (Europe/Kyiv) and the active locale.
+
+## 10. Out of scope for 1.0
+Assigning programs to students and any student account or view; view/download counters; Papaya breadcrumbs, icons, theme; naming, translating or searching asanas by name; adding or editing catalog images in the UI; localStorage mode (`papaya.workout-program.v1`); undo/redo; collaborative editing or merging; program sharing between accounts; templates; timers or audio; PDF generation on the server.
+
+## 11. Acceptance criteria
+- [ ] A new Telegram account creates a program, edits it, and sees it in the library on another device.
+- [ ] Limits hold: 1-36 slots per set, at most 3 segments per slot, count 1-999, side <= 3 chars in UI and <= 4 on the server, schedule 1-31 days, activity label <= 24, colour only from the six keys; invalid documents are rejected by the server.
+- [ ] Catalog shows 1,239 images; level filter L1-L6/Other works; click adds to the first free slot, then appends a slot, then shows a message when full; drag from catalog replaces and keeps segments/colour/side.
+- [ ] Slot reorder (within set), swap (across sets), set reorder, slot clear, add/remove sets and slots work with pointer, touch and keyboard.
+- [ ] Segments popover, side control, paint mode and schedule grid behave as section 4 and are fully keyboard-operable.
+- [ ] Autosave: indicator states, 1.5 s debounce, retry with backoff, flush on leave, unload warning.
+- [ ] A stale tab cannot overwrite a newer version; it shows the conflict banner and reloads the latest; a program deleted in another tab stops saving.
+- [ ] Library: list, newest first, duplicate (no link, "(копія)"), delete with confirm, title search; another account's id gives the missing-program response.
+- [ ] Preview shows both views; print output is readable, has no browser header/footer, keeps colours, and respects breaks.
+- [ ] Share: enable, copy, disable; the old URL fails on the next request; re-enable gives a new token; revoked/invalid tokens show the identical neutral page with no title or owner; no-store/noindex/no-referrer headers present.
+- [ ] No student, assignment, analytics or Papaya branding remains anywhere in UI, code, routes or data.
+- [ ] Ukrainian and Russian are complete (no missing keys, no hard-coded Russian); switching language does not alter stored content.
+- [ ] Visuals follow the YWS Lab design system; the interaction behavior of the Papaya builder is unchanged except where this spec says otherwise.
+- [ ] Editor stays responsive with 1,239 catalog images and a 20-set program; catalog filter change < 100 ms; recorded test conditions.
+
+## 12. Porting notes
+Source (Papaya `/app`; in this repo the read-only copy is `vendor/papaya-builder/`, never imported at runtime): `dashboard/workouts/builder/builder-client.tsx` (UI), `_lib/use-program.ts` (model and autosave hook), `_lib/strings.tsx` (strings + `BuilderStringsProvider`), `_lib/asana-manifest.ts` + `public/asanas/**` (catalog), `workout-preview/preview-client.tsx` (preview/print), `papaya-builder.tsx` and `papaya-preview.tsx` (Papaya wiring, to be replaced), `dashboard/workouts/_actions.ts` and `workouts-list-client.tsx` (list, actions), `w/[token]/page.tsx` (public share page), `workout-preview/_actions.ts` (analytics, drop).
+
+Injection points to keep:
+- `BuilderClientProps`: `initialProgram`, `save(program) => Promise<{status?, ok?}>`, `share { initialToken, enable(id), disable(id) }`, `previewHref(id)`. Replace `brand {href,label,icon}` with a plain `backHref` + localized label (no icon). Extend `save` result with `'conflict' | 'gone' | 'unauthorized'` and `SaveState` with `conflict | gone`. Remove the localStorage branch of `useProgram`.
+- `PreviewClient` props: `initialProgram`, `publicView`, `backHref`. Drop `shareToken`, `trackView`, `trackDownload` and the Papaya wordmark.
+- Strings: feed `BuilderStringsProvider` from the app's i18n (UA/RU) or read the app's dictionary directly; keep the `workoutBuilder.*` key shape.
+- Stack is fixed by CLAUDE.md (Next.js 16, React 19, Tailwind 4, Drizzle; tokens only from `src/styles/tokens.css`, files under `src/features/builder/`). Dependencies: `@dnd-kit/core`, `@dnd-kit/sortable`; add `KeyboardSensor` with a sortable keyboard coordinate getter.
+
+YWS app must implement (server actions or API; owner checks on every call; Telegram session identifies the owner):
+| Operation | Contract |
+|---|---|
+| `listPrograms(query?, cursor?)` | Summaries: id, title, setsCount, filledSlotsCount, slotsCount, previewSrcs (first 4), updatedAt, shareActive |
+| `createProgram()` | New default program, returns id |
+| `getProgram(id)` | `{ program, version, shareToken }` or `not_found` |
+| `saveProgram(id, program, baseVersion)` | `ok { version, updatedAt }`, `conflict { latestVersion }`, `not_found`, `unauthorized`, `invalid`; atomic conditional update |
+| `duplicateProgram(id)`, `deleteProgram(id)` | As section 3; delete removes the token |
+| `enableSharing(id)` / `disableSharing(id)` | `ok { shareToken }` (idempotent) / `ok` |
+| `getSharedProgram(token)` | Document minus owner data, or `null` for any failure |
+| Preview data | Same as `getProgram`, owner-only |
+
+Storage (assumed): table `programs(id uuid pk, owner_account_id fk, title, doc jsonb, version int, share_token unique null, created_at, updated_at)`; the catalog manifest is read-only code, not a table.
+
+Open decisions: keep the second preview view ("Cards")? Hash vs store share tokens? Fix the two `side` quirks in 4.5?
+
+## Decisions on open questions (orchestrator, 27 Oct 2026)
+1. The second preview view ("Cards") is kept — port as-is.
+2. Share tokens are stored raw (random, ≥128 bits, URL-safe) so the owner can copy the link again; disabling sets the token to null, re-enabling issues a new token, so old links stay dead.
+3. `side` quirks are fixed: `side` is cleared only when the slot becomes fully empty (no asana and no segments); clearing segments or the asana alone keeps it.
+4. Server caps as assumed in this spec are accepted for 1.0.
