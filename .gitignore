@@ -1,27 +1,23 @@
-# Temporary design reference screenshots; remove the folder after UI validation.
-references/
-/Interwoven Knot Emblem with Lab Wordmark.png
-/Interwoven Knot Emblem with Red Lab Wordmark.png
+# Dependencies and generated output
+node_modules/
+dist/
+.next/
+.vinext/
+out/
+coverage/
+.wrangler/
+.sites-runtime/
+outputs/
+work/
 
-# Dependencies, builds, local credentials, and generated state.
-/node_modules/
-/dist/
-/.next/
-/.vinext/
-/out/
-/coverage/
-/.wrangler/
-/.sites-runtime/
-/outputs/
-/work/
+# Local environment and credentials
 .env*
 !.env.example
 .dev.vars*
 *.pem
+
+# Tool-generated files
 *.tsbuildinfo
 next-env.d.ts
 npm-debug.log*
 .DS_Store
-
-# Papaya source checkout used only for selectively copied builder assets.
-/papaya/
