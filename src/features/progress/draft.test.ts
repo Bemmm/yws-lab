@@ -72,3 +72,20 @@ describe("draft state", () => {
     expect(p.speech_voice).toBeNull();
   });
 });
+
+describe("curator note helpers", () => {
+  it("normalizes: trims, empty and whitespace become null", async () => {
+    const { normalizeNote } = await import("./draft");
+    expect(normalizeNote("  hi \n")).toBe("hi");
+    expect(normalizeNote("   ")).toBeNull();
+    expect(normalizeNote(null)).toBeNull();
+  });
+  it("dirty compares normalized values", async () => {
+    const { isNoteDirty } = await import("./draft");
+    expect(isNoteDirty(null, "")).toBe(false);
+    expect(isNoteDirty(null, "  ")).toBe(false);
+    expect(isNoteDirty("a", "a ")).toBe(false);
+    expect(isNoteDirty("a", "b")).toBe(true);
+    expect(isNoteDirty("a", "")).toBe(true);
+  });
+});

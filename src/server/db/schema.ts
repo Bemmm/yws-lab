@@ -130,10 +130,13 @@ export const assessmentStage = pgTable(
       .references(() => enrollment.id, { onDelete: "cascade" }),
     stage: text("stage").notNull(),
     version: integer("version").notNull().default(1),
+    /** Curator observation, trimmed, null when empty. Student data: never logged. */
+    note: text("note"),
     updatedAt: tstz("updated_at").notNull().defaultNow(),
     updatedBy: uuid("updated_by").references(() => account.id, { onDelete: "set null" }),
   },
   (t) => [
+    check("assessment_stage_note_len", sql`char_length(${t.note}) <= 2000`),
     unique("assessment_stage_enrollment_stage_uniq").on(t.enrollmentId, t.stage),
     check("assessment_stage_valid", sql`${t.stage} = 'point0' or ${t.stage} = 'final' or ${t.stage} ~ '^m([1-9]|1[0-2])$'`),
   ],

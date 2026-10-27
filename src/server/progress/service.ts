@@ -52,7 +52,7 @@ export type ProgressError =
   | { code: "cohort_archived" }
   | { code: "enrollment_archived" }
   | { code: "version_conflict"; entity: "cohort"; currentVersion: number; currentModules: number[] }
-  | { code: "stage_conflict"; currentVersion: number; currentScores: ScoreMap }
+  | { code: "stage_conflict"; currentVersion: number; currentScores: ScoreMap; currentNote: string | null }
   | { code: "module_has_scores"; affectedCount: number; modules: { moduleNumber: number; students: number; scores: number }[] }
   | { code: "already_enrolled"; enrollmentId: string; archived: boolean }
   | { code: "duplicate_contact"; existingStudentId: string }
@@ -474,6 +474,7 @@ export const restoreEnrollment = (id: string, actorId: string) => setEnrollmentA
 
 interface StageRow {
   version: number;
+  note: string | null;
   scores: StageScores;
 }
 
@@ -486,6 +487,7 @@ async function loadStages(e: Exec, enrollmentIds: string[]): Promise<Map<string,
       enrollmentId: assessmentStage.enrollmentId,
       stage: assessmentStage.stage,
       version: assessmentStage.version,
+      note: assessmentStage.note,
       code: assessmentScore.competencyCode,
       score: assessmentScore.score,
     })
@@ -494,7 +496,7 @@ async function loadStages(e: Exec, enrollmentIds: string[]): Promise<Map<string,
     .where(inArray(assessmentStage.enrollmentId, enrollmentIds));
   for (const r of rows) {
     const byStage = out.get(r.enrollmentId)!;
-    const cur = (byStage[r.stage] ??= { version: r.version, scores: {} });
+    const cur = (byStage[r.stage] ??= { version: r.version, note: r.note, scores: {} });
     if (r.code !== null && r.score !== null) (cur.scores as Record<string, number>)[r.code] = r.score;
   }
   return out;
@@ -510,6 +512,8 @@ export interface StageForm {
   /** 0 when the stage has never been saved. Pass it back as `expectedVersion`. */
   version: number;
   scores: ScoreMap;
+  /** Curator observation; null when empty. */
+  note: string | null;
   scored: number;
   /** Nearest earlier scored value per competency, with the stage it came from. */
   previous: Record<CompetencyCode, { stage: StageId; score: number } | null>;
@@ -543,6 +547,7 @@ export async function getStageForm(enrollmentId: string, stage: string): Promise
       stage,
       version: cur?.version ?? 0,
       scores: toScoreMap(cur?.scores ?? {}),
+      note: cur?.note ?? null,
       scored: scoredCount(cur?.scores ?? {}),
       previous,
       availability: stageAvailability(modules, stage, scoredMap(stages)),
@@ -554,6 +559,7 @@ export async function getStageForm(enrollmentId: string, stage: string): Promise
 export interface SaveStageResult {
   version: number;
   scores: ScoreMap;
+  note: string | null;
   scored: number;
 }
 
@@ -567,10 +573,11 @@ export async function saveStage(
   enrollmentId: string,
   stage: string,
   scores: Record<string, number | null>,
+  note: string | null,
   expectedVersion: number,
   actorId: string,
 ): Promise<Result<SaveStageResult>> {
-  const p = parse(S.saveStageSchema, { enrollmentId, stage, scores, expectedVersion, actorId });
+  const p = parse(S.saveStageSchema, { enrollmentId, stage, scores, note, expectedVersion, actorId });
   if (!p.ok) return p;
   const issues = S.validateScores(p.value.scores);
   if (issues.length) return fail({ code: "invalid_scores", issues });
@@ -593,17 +600,20 @@ export async function saveStage(
         code: "stage_conflict",
         currentVersion: latest?.version ?? 0,
         currentScores: toScoreMap(latest?.scores ?? {}),
+        currentNote: latest?.note ?? null,
       });
     };
 
     let stageId: string;
     let newVersion: number;
     const previous = stages[stage]?.scores ?? {};
+    const previousNote = stages[stage]?.note ?? null;
+    const nextNote = S.normalizeNote(p.value.note);
     if (!stages[stage]) {
       if (expectedVersion !== 0) return conflict();
       const [ins] = await t
         .insert(assessmentStage)
-        .values({ enrollmentId: e.id, stage, updatedBy: actorId })
+        .values({ enrollmentId: e.id, stage, note: nextNote, updatedBy: actorId })
         .onConflictDoNothing()
         .returning({ id: assessmentStage.id, version: assessmentStage.version });
       if (!ins) return conflict(); // lost a race with another first save
@@ -618,7 +628,7 @@ export async function saveStage(
       if (!row || row.version !== expectedVersion) return conflict();
       stageId = row.id;
       newVersion = row.version + 1;
-      await t.update(assessmentStage).set({ version: newVersion, updatedAt: new Date(), updatedBy: actorId }).where(eq(assessmentStage.id, stageId));
+      await t.update(assessmentStage).set({ version: newVersion, note: nextNote, updatedAt: new Date(), updatedBy: actorId }).where(eq(assessmentStage.id, stageId));
       await t.delete(assessmentScore).where(eq(assessmentScore.stageId, stageId));
     }
 
@@ -633,8 +643,10 @@ export async function saveStage(
       toVersion: newVersion,
       previous,
       next,
+      previousNote,
+      nextNote,
     });
-    return { version: newVersion, scores: toScoreMap(next), scored: rows.length };
+    return { version: newVersion, scores: toScoreMap(next), note: nextNote, scored: rows.length };
   });
 }
 
@@ -734,6 +746,8 @@ export interface StudentStageRow {
   basicLevel: number | null;
   systemLevel: number | null;
   scores: ScoreMap;
+  /** Curator observation; null when empty. */
+  note: string | null;
   availability: StageAvailability;
 }
 
@@ -773,6 +787,7 @@ export async function getStudentProgress(enrollmentId: string): Promise<Result<S
         basicLevel: m.basicLevel,
         systemLevel: m.systemLevel,
         scores: toScoreMap(stages[m.stage]?.scores ?? {}),
+        note: stages[m.stage]?.note ?? null,
         availability: stageAvailability(modules, m.stage, counts),
       })),
       progress,

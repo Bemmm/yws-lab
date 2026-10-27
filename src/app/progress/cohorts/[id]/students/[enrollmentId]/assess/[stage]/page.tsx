@@ -57,6 +57,7 @@ export default async function AssessPage({
           stage={stage}
           initialVersion={form.version}
           initialScores={form.scores}
+          initialNote={form.note}
           previous={form.previous}
           readOnly={form.readOnly}
           locked={locked}

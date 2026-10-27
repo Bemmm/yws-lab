@@ -1,0 +1,2 @@
+ALTER TABLE "assessment_stage" ADD COLUMN "note" text;--> statement-breakpoint
+ALTER TABLE "assessment_stage" ADD CONSTRAINT "assessment_stage_note_len" CHECK (char_length("assessment_stage"."note") <= 2000);

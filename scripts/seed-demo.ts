@@ -123,7 +123,7 @@ async function main() {
     );
     for (const stage of ["point0", "m1", "m2", "m3", "m4", "m5", "final"]) {
       const s = d.stages[stage];
-      if (s) must(await svc.saveStage(e.id, stage, s, 0, actorId), `saveStage ${stage}`);
+      if (s) must(await svc.saveStage(e.id, stage, s, null, 0, actorId), `saveStage ${stage}`);
     }
   }
   console.log(`seed-demo: created "${COHORT_NAME}" (${c.id}) with modules 1-5 and ${DEMO.length} students.`);

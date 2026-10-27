@@ -54,3 +54,15 @@ export function countAssessed(draft: Draft): number {
 export function toPayload(draft: Draft): Record<string, number | null> {
   return Object.fromEntries(COMPETENCY_CODES.map((c) => [c, draft[c]]));
 }
+
+export const NOTE_MAX = 2000;
+
+/** Trimmed note, empty -> null (what the server stores). */
+export function normalizeNote(raw: string | null | undefined): string | null {
+  const v = (raw ?? "").trim();
+  return v === "" ? null : v;
+}
+
+export function isNoteDirty(baseNote: string | null, draftNote: string): boolean {
+  return normalizeNote(draftNote) !== normalizeNote(baseNote);
+}
