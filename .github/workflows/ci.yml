@@ -34,3 +34,50 @@ jobs:
         run: PGPASSWORD=yws psql -h localhost -U yws -d yws -c 'create database yws_test'
       - run: npm ci
       - run: npm run check
+
+  e2e:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: yws
+          POSTGRES_PASSWORD: yws
+          POSTGRES_DB: yws
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U yws"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://yws:yws@localhost:5432/yws
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Apply migrations
+        run: npm run db:migrate
+      - name: Release journeys and accessibility
+        run: npx playwright test
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          if-no-files-found: ignore
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screens
+          path: test-results/screens
+          if-no-files-found: ignore

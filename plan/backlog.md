@@ -274,13 +274,13 @@ Verify roster counts, selected modules and sampled scores with a methodologist; 
 
 Verify the complete 1.0 release, deploy it and provide operational guidance.
 
-### YWSLAB-29 · story · `backlog` — Verify end-to-end user journeys
+### YWSLAB-29 · story · `done` — Verify end-to-end user journeys
 
 Test sign-in, plan ownership, methodologist progress access, persistence and failure/recovery paths against acceptance criteria.
 
 Links: blocks YWSLAB-31
 
-#### YWSLAB-64 · test · `todo` — Run release journey tests
+#### YWSLAB-64 · test · `done` — Run release journey tests
 
 Cover Telegram sign-in, private plans, public links, shared methodologist cohort, module edits, assessments, import and denied access.
 
