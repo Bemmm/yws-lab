@@ -1,6 +1,5 @@
 # YWS-Lab
 
-The YWS-Lab application is being restarted from a clean repository baseline.
+App for YWS methodologists and teachers: workout builder and student course progress.
 
-Product specifications and the Release 1.0 plan are maintained in Tasksurf.
-The production Site identity is retained in `.openai/hosting.json`.
+Product specifications and the release plan live in this repository (see `/specs`).
