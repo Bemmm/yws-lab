@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { appOrigin, OAUTH_COOKIE, telegramConfig } from "@/server/auth/config";
-import { clearOAuthCookie, setSessionCookie } from "@/server/auth/cookies";
+import { OAUTH_COOKIE, telegramConfig } from "@/server/auth/config";
+import { clearOAuthCookie, redirectTo, setSessionCookie } from "@/server/auth/cookies";
 import { openOAuthState } from "@/server/auth/crypto";
 import { AuthFlowError, exchangeCode, type AuthErrorCode } from "@/server/auth/oidc";
 import { signIn } from "@/server/auth/service";
@@ -9,7 +9,7 @@ import { getDb } from "@/server/db/client";
 export const dynamic = "force-dynamic";
 
 function fail(request: Request, code: AuthErrorCode): NextResponse {
-  const res = NextResponse.redirect(new URL(`/login?error=${code}`, appOrigin(request)), 303);
+  const res = redirectTo(request, `/login?error=${code}`);
   clearOAuthCookie(res);
   return res;
 }

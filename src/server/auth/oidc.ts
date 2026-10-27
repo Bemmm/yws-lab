@@ -90,7 +90,9 @@ export async function exchangeCode(
     ({ payload: claims } = await jwtVerify(idToken, jwksFor(cfg.jwksUrl), {
       issuer: cfg.issuer,
       audience: cfg.clientId,
-      algorithms: ["RS256"],
+      algorithms: ["RS256", "ES256"],
+      requiredClaims: ["exp", "iat", "sub"],
+      clockTolerance: 30,
     }));
   } catch {
     throw new AuthFlowError("token");

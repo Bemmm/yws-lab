@@ -1,5 +1,5 @@
-import type { NextResponse } from "next/server";
-import { isProduction, OAUTH_COOKIE, OAUTH_TTL_SECONDS, SESSION_ABSOLUTE_MS, SESSION_COOKIE } from "./config";
+import { NextResponse } from "next/server";
+import { appOrigin, isProduction, OAUTH_COOKIE, OAUTH_TTL_SECONDS, SESSION_ABSOLUTE_MS, SESSION_COOKIE } from "./config";
 
 const base = () => ({ httpOnly: true, secure: isProduction(), sameSite: "lax" as const, path: "/" });
 
@@ -14,4 +14,12 @@ export function setOAuthCookie(res: NextResponse, value: string): void {
 }
 export function clearOAuthCookie(res: NextResponse): void {
   res.cookies.set(OAUTH_COOKIE, "", { ...base(), maxAge: 0 });
+}
+
+/** 303 redirect; uses the configured origin, or a relative Location when none is known (prod without APP_URL). */
+export function redirectTo(request: Request, path: string): NextResponse {
+  const origin = appOrigin(request);
+  return origin
+    ? NextResponse.redirect(new URL(path, origin), 303)
+    : new NextResponse(null, { status: 303, headers: { location: path } });
 }

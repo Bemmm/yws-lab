@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { telegramConfig } from "@/server/auth/config";
-import { clearOAuthCookie, setOAuthCookie } from "@/server/auth/cookies";
+import { clearOAuthCookie, redirectTo, setOAuthCookie } from "@/server/auth/cookies";
 import { pkceChallenge, randomToken, safeNext, sealOAuthState } from "@/server/auth/crypto";
-import { appOrigin } from "@/server/auth/config";
 import { buildAuthorizeUrl } from "@/server/auth/oidc";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +9,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const cfg = telegramConfig(request);
   if (!cfg) {
-    const res = NextResponse.redirect(new URL("/login?error=config", appOrigin(request)), 303);
+    const res = redirectTo(request, "/login?error=config");
     clearOAuthCookie(res);
     return res;
   }

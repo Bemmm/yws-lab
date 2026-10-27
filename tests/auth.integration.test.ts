@@ -246,6 +246,18 @@ describe("GET /auth/callback", () => {
     expect(res.headers.get("location")).toContain("error=token");
   });
 
+  it("rejects a token without exp", async () => {
+    const start = await telegramRoute.GET(new Request("http://app.test/auth/telegram"));
+    const authorize = new URL(start.headers.get("location")!);
+    const noExp = await new SignJWT({ id: Number(TG_ID), nonce: authorize.searchParams.get("nonce")! })
+      .setProtectedHeader({ alg: "RS256", kid: "k1" })
+      .setSubject(String(TG_ID)).setIssuer("https://oauth.telegram.org").setAudience("123456").setIssuedAt()
+      .sign(privateKey);
+    tokenResponse = () => ({ status: 200, body: { id_token: noExp } });
+    const res = await callbackRoute.GET(new Request(`http://app.test/auth/callback?code=x&state=${authorize.searchParams.get("state")}`, { headers: { cookie: cookieHeader(start) } }));
+    expect(res.headers.get("location")).toContain("error=token");
+  });
+
   it("maps cancel and provider failures to login error codes", async () => {
     expect((await login({ error: "access_denied" })).location).toBe("http://app.test/login?error=cancelled");
     expect((await login({ tokenStatus: 500 })).location).toBe("http://app.test/login?error=provider");
@@ -339,6 +351,29 @@ describe("sessions", () => {
     expect(setCookieOf(res, "yws_session")).toMatch(/Max-Age=0/);
     expect(await sql`select 1 from session`).toHaveLength(0);
     expect(await service.lookupSession(db, token)).toBeNull();
+    expect(await sql`select 1 from audit_event where action = 'auth.sign_out'`).toHaveLength(1);
+  });
+
+  it("sign-out rejects a foreign Origin and keeps the session", async () => {
+    const { token } = await newSession();
+    const res = await signoutRoute.POST(new Request("http://app.test/auth/signout", { method: "POST", headers: { cookie: `yws_session=${token}`, origin: "https://evil.test" } }));
+    expect(res.status).toBe(403);
+    expect(await sql`select 1 from session`).toHaveLength(1);
+    const ok = await signoutRoute.POST(new Request("http://app.test/auth/signout", { method: "POST", headers: { cookie: `yws_session=${token}`, origin: "http://app.test" } }));
+    expect(ok.status).toBe(303);
+  });
+});
+
+describe("config hardening", () => {
+  it("ignores endpoint overrides and requires APP_URL in production", () => {
+    const env = { NODE_ENV: "production", TELEGRAM_CLIENT_ID: "1", TELEGRAM_CLIENT_SECRET: "s", SESSION_SECRET: "x", TELEGRAM_TOKEN_URL: "http://evil/token", TELEGRAM_JWKS_URL: "http://evil/jwks", TELEGRAM_ISSUER: "evil" };
+    const req = new Request("http://attacker.test/auth/telegram");
+    expect(config.telegramConfig(req, env)).toBeNull();
+    const cfg = config.telegramConfig(req, { ...env, APP_URL: "https://app.example" })!;
+    expect(cfg.tokenUrl).toBe("https://oauth.telegram.org/token");
+    expect(cfg.jwksUrl).toBe("https://oauth.telegram.org/.well-known/jwks.json");
+    expect(cfg.issuer).toBe("https://oauth.telegram.org");
+    expect(cfg.redirectUri).toBe("https://app.example/auth/callback");
   });
 });
 

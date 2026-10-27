@@ -70,5 +70,13 @@ export async function lookupSession(db: Db, token: string | undefined, now = new
 
 export async function signOut(db: Db, token: string | undefined): Promise<void> {
   if (!token) return;
-  await db.delete(session).where(eq(session.tokenHash, sha256Hex(token)));
+  const [row] = await db
+    .delete(session)
+    .where(eq(session.tokenHash, sha256Hex(token)))
+    .returning({ accountId: session.accountId });
+  if (row) {
+    await db
+      .insert(auditEvent)
+      .values({ actorId: row.accountId, action: "auth.sign_out", entity: "account", entityId: row.accountId });
+  }
 }
