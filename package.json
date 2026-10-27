@@ -10,7 +10,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "node scripts/migrate.mjs && next start -p ${PORT:-3000}",
-    "lint": "eslint .",
+    "lint": "node scripts/check-contrast.mjs && eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build",

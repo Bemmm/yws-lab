@@ -6,7 +6,7 @@
   --ink: #0B0B0F;
   --ink-2: #3D414C;
   --ink-muted: #5E6270;
-  --ink-on-dark-muted: #A3A6B0;
+  --ink-on-dark-muted: var(--inverse-muted);
   --line: #EEEFF2;
   --toggle-off: #C9CCD4;
   --brand-red: #D00810;
@@ -27,6 +27,16 @@
   --green-500: #5EE0A0;
   --peach: #FFE9DE;
   --white: #FFFFFF;
+  /* Semantic roles: "ink" is text; actions and inverse surfaces have their own tokens so they can flip in dark mode. */
+  --action-bg: #0B0B0F;
+  --action-fg: #FFFFFF;
+  --action-fg-soft: rgba(255,255,255,0.18);
+  --inverse-bg: #0B0B0F;
+  --inverse-fg: #FFFFFF;
+  --inverse-muted: #A3A6B0;
+  --asana-bg: #FFFFFF;
+  --hover: rgba(11,11,15,0.05);
+  --scrim: rgba(11,11,15,0.4);
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -38,7 +48,8 @@
   --button-h: 48px;
   --button-h-lg: 52px;
   --sidebar-w: 248px;
-  --ring-avatar: 0 0 0 2px #FFFFFF;
+  --ring-avatar: 0 0 0 2px var(--bg-card);
+  color-scheme: light dark;
 }
 
 @theme static inline {
@@ -48,6 +59,14 @@
   --color-ink-2: var(--ink-2);
   --color-ink-muted: var(--ink-muted);
   --color-ink-on-dark-muted: var(--ink-on-dark-muted);
+  --color-action-bg: var(--action-bg);
+  --color-action-fg: var(--action-fg);
+  --color-inverse-bg: var(--inverse-bg);
+  --color-inverse-fg: var(--inverse-fg);
+  --color-inverse-muted: var(--inverse-muted);
+  --color-asana-bg: var(--asana-bg);
+  --color-hover: var(--hover);
+  --color-scrim: var(--scrim);
   --color-line: var(--line);
   --color-toggle-off: var(--toggle-off);
   --color-brand-red: var(--brand-red);
@@ -127,4 +146,70 @@
   --slot-rose: #FDA4AF;
   --slot-rose-band: #FECDD3;
   --slot-rose-ink: #881337;
+}
+
+/* Dark theme: follows the operating-system setting, no manual toggle. `screen` keeps print (and the share page's
+   print stylesheet) on the light values above. Checked by scripts/check-contrast.mjs. */
+@media screen and (prefers-color-scheme: dark) {
+  :root {
+    --bg-page: #0B0C10;
+    --bg-card: #16171D;
+    --ink: #F2F3F6;
+    --ink-2: #C9CCD4;
+    --ink-muted: #9A9EAA;
+    --line: #262830;
+    --toggle-off: #3A3D47;
+    --action-bg: #F2F3F6;
+    --action-fg: #0B0B0F;
+    --action-fg-soft: rgba(11,11,15,0.14);
+    --inverse-bg: #22232B;
+    --inverse-fg: #F2F3F6;
+    --inverse-muted: #A3A6B0;
+    --asana-bg: #ECEDF1;
+    --hover: rgba(255,255,255,0.07);
+    --scrim: rgba(0,0,0,0.6);
+    --brand-red: #D92D35;
+    --brand-red-700: #DE3039;
+    --focus: #7AA2FF;
+    --sand: #2A241C;
+    --sand-ink: #E8D3B4;
+    --basic: #3FC1C7;
+    --basic-soft: #0F3335;
+    --system: #A597F5;
+    --system-soft: #2A2550;
+    --mint: #12301F;
+    --mint-ink: #6EE7A8;
+    --amber: #33270F;
+    --amber-ink: #F5C46B;
+    --red-soft: #3A1715;
+    --red-ink: #FF9A90;
+    --green-500: #5EE0A0;
+    --peach: #3A2A22;
+    --shadow-float: 0 24px 48px -24px rgba(0,0,0,0.8);
+    --shadow-drawer: -30px 0 60px -30px rgba(0,0,0,0.8);
+    --slot-amber: #C99A2E;
+    --slot-amber-band: #3D3115;
+    --slot-amber-ink: #FCE7A6;
+    --slot-emerald: #34B07F;
+    --slot-emerald-band: #14382B;
+    --slot-emerald-ink: #A7F3D0;
+    --slot-orange: #D9772B;
+    --slot-orange-band: #44281A;
+    --slot-orange-ink: #FED7AA;
+    --slot-sky: #3B9BD6;
+    --slot-sky-band: #17324A;
+    --slot-sky-ink: #BAE6FD;
+    --slot-violet: #8B7BE0;
+    --slot-violet-band: #2D2958;
+    --slot-violet-ink: #DDD6FE;
+    --slot-rose: #D4607A;
+    --slot-rose-band: #4A1F2B;
+    --slot-rose-ink: #FECDD3;
+  }
+}
+
+@media print {
+  :root {
+    color-scheme: light;
+  }
 }

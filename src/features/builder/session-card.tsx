@@ -97,7 +97,7 @@ export function SessionCard(props: SessionCardProps) {
             >
               <GripIcon />
             </button>
-            <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-pill bg-ink text-micro text-white tabular-nums">
+            <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-pill bg-action-bg text-micro text-action-fg tabular-nums">
               {index}
             </span>
             <input

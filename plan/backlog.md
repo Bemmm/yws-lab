@@ -319,3 +319,6 @@ Use Render's client IP header (`true-client-ip` / first `x-forwarded-for` hop se
 
 ### YWSLAB-72 · story · `done` — Curator observation note per assessment stage
 From the methodologists' prototype walkthrough (27 Oct): each stage (Point 0, module, Final) has a free-text "Наблюдение куратора". Store one note per enrollment+stage (≤2,000 chars), edit it on the assessment form, save atomically with the stage's scores, show it on the student page per stage. A note alone does not make a stage "scored" for availability rules. Audit keeps the previous note.
+
+### YWSLAB-73 · story · `done` — Dark theme following the system setting
+Semantic tokens (`--action-*`, `--inverse-*`, `--asana-bg`, `--hover`, `--scrim`) and a dark palette under `@media screen and (prefers-color-scheme: dark)` (print stays light), `color-scheme: light dark`, white logo via `<picture>`, asana tiles stay light, `scripts/check-contrast.mjs` in `npm run lint`, dark Playwright projects (1440, 375). No manual toggle.

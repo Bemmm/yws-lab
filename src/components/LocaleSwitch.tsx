@@ -14,7 +14,7 @@ export function LocaleSwitch({ locale, t }: { locale: Locale; t: Dictionary }) {
           lang={l}
           aria-pressed={l === locale}
           title={t.language[l]}
-          className="rounded-pill px-3 text-caption font-bold uppercase text-ink-2 aria-pressed:bg-ink aria-pressed:text-white"
+          className="rounded-pill px-3 text-caption font-bold uppercase text-ink-2 aria-pressed:bg-action-bg aria-pressed:text-action-fg"
           style={{ minHeight: "var(--tap-min)", minWidth: "var(--tap-min)" }}
         >
           {l}

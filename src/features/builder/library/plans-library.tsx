@@ -55,7 +55,7 @@ function PreviewStrip({ srcs }: { srcs: string[] }) {
     <div className="grid grid-cols-4 gap-px overflow-hidden rounded-md bg-line" aria-hidden="true">
       {cells.map((src, i) =>
         src ? (
-          <div key={i} className="aspect-square bg-white">
+          <div key={i} className="aspect-square bg-asana-bg">
             {/* eslint-disable-next-line @next/next/no-img-element -- local school-owned SVGs */}
             <img src={src} alt="" className="h-full w-full select-none object-contain p-2" draggable={false} />
           </div>
@@ -202,7 +202,7 @@ function ActionMenu({
         aria-expanded={open}
         aria-label={label}
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex size-11 items-center justify-center rounded-pill bg-white/90 text-ink-2 ring-1 ring-line hover:text-ink"
+        className="inline-flex size-11 items-center justify-center rounded-pill bg-bg-card/90 text-ink-2 ring-1 ring-line hover:text-ink"
       >
         <DotsIcon />
       </button>

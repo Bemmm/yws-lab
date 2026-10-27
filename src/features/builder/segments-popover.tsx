@@ -205,7 +205,7 @@ function TypeToggle({ value, onChange }: { value: SegmentType; onChange: (next: 
             aria-label={label}
             title={label}
             className={`inline-flex h-8 w-10 items-center justify-center gap-1 text-caption font-bold pointer-coarse:h-11 pointer-coarse:w-11 ${
-              value === kind ? "bg-ink text-white" : "text-ink-2 hover:bg-black/5"
+              value === kind ? "bg-action-bg text-action-fg" : "text-ink-2 hover:bg-hover"
             }`}
           >
             <SegmentShape type={kind} size={9} />

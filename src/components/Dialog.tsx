@@ -34,7 +34,7 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
         if (e.target === e.currentTarget) onClose();
       }}
       className={cx(
-        "m-auto w-[min(92vw,28rem)] rounded-xl bg-bg-card p-0 text-ink shadow-float backdrop:bg-ink/40",
+        "m-auto w-[min(92vw,28rem)] rounded-xl bg-bg-card p-0 text-ink shadow-float backdrop:bg-scrim",
         className,
       )}
     >

@@ -62,12 +62,12 @@ export function DropSlot(props: DropSlotProps) {
         "relative flex flex-col rounded-sm transition-colors",
         hasAsana
           ? `bg-bg-page outline-2 ${isOver && isLibraryDrag ? "outline outline-ink" : "outline-transparent"}`
-          : `border-2 border-dashed ${isOver ? "border-ink bg-white" : "border-toggle-off bg-bg-page/50"}`,
+          : `border-2 border-dashed ${isOver ? "border-ink bg-bg-card" : "border-toggle-off bg-bg-page/50"}`,
         isDragging ? "z-10" : "",
       ].join(" ")}
     >
       {hasAsana && isOver && !isDragging && isLibraryDrag && (
-        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-sm bg-white/80 text-ink ring-2 ring-ink">
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-sm bg-bg-card/80 text-ink ring-2 ring-ink">
           <SwapIcon />
         </div>
       )}
@@ -187,7 +187,7 @@ function FilledSlot({
     <div className={`group relative flex h-full w-full flex-col rounded-sm ${isDragging ? "opacity-30" : ""}`}>
       <div
         {...handle}
-        className={`relative aspect-square flex-1 touch-none rounded-sm ${paintMode ? "cursor-crosshair" : "cursor-grab active:cursor-grabbing"}`}
+        className={`relative aspect-square flex-1 touch-none rounded-sm bg-asana-bg ${paintMode ? "cursor-crosshair" : "cursor-grab active:cursor-grabbing"}`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- local school-owned SVGs, no optimization needed */}
         <img src={asana.src} alt={alt} draggable={false} className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain p-2" />
@@ -274,14 +274,14 @@ function SideRadio({ side, onChange }: { side?: SlotSide; onChange: (s: SlotSide
   const customVal = current && current !== "L" && current !== "R" ? current : "";
   const btn = (active: boolean) =>
     `inline-flex size-6 items-center justify-center text-micro pointer-coarse:size-11 ${
-      active ? "bg-ink text-white" : "text-ink-2 hover:bg-black/5"
+      active ? "bg-action-bg text-action-fg" : "text-ink-2 hover:bg-hover"
     }`;
   return (
     <div
       role="group"
       aria-label={s.sideGroupLabel}
       onPointerDown={(e) => e.stopPropagation()}
-      className={`absolute left-1 top-1 z-10 inline-flex items-center overflow-hidden rounded-sm bg-white/95 shadow-sm ring-1 ring-line transition-opacity focus-within:opacity-100 pointer-coarse:opacity-100 ${
+      className={`absolute left-1 top-1 z-10 inline-flex items-center overflow-hidden rounded-sm bg-bg-card/95 shadow-sm ring-1 ring-line transition-opacity focus-within:opacity-100 pointer-coarse:opacity-100 ${
         current ? "opacity-100" : "opacity-0 group-hover:opacity-100"
       }`}
     >
@@ -363,7 +363,7 @@ function SegmentsRow({
       title={paintMode ? t.segments.paintTitle : t.segments.setBreathTitle}
       style={style}
       className={`flex min-h-7 w-full items-center justify-center gap-2 rounded-b-sm border-t border-line px-1.5 text-micro tabular-nums pointer-coarse:min-h-11 ${
-        style ? "border-transparent" : "text-ink-2 hover:bg-black/5"
+        style ? "border-transparent" : "text-ink-2 hover:bg-hover"
       } ${paintMode ? "cursor-crosshair" : ""}`}
     >
       {segments.length === 0 ? (
