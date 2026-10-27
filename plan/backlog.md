@@ -72,29 +72,29 @@ Clean checkout installs and runs checks; CI runs lint/typecheck, unit and end-to
 
 Use the red-lab wordmark source; export optimized production sizes, inspect transparency and legibility on dark navigation/light sign-in, and choose a simplified favicon-sized mark.
 
-### YWSLAB-17 · story · `backlog` — Implement Telegram-only sign-in and account lifecycle
+### YWSLAB-17 · story · `done` — Implement Telegram-only sign-in and account lifecycle
 
 Implement official Telegram OIDC authorization-code sign-in with PKCE, server-side token validation, session handling, sign-out, errors and recovery. No password, Google or student role. Follow the shared YWS-Lab access spec.
 
-#### YWSLAB-37 · backend · `todo` — Integrate Telegram OIDC callback and sessions
+#### YWSLAB-37 · backend · `done` — Integrate Telegram OIDC callback and sessions
 
 Use authorization code with PKCE/state/nonce; validate ID token server-side and establish secure session keyed by stable Telegram subject. Cover expiry, replay and failure paths.
 
-#### YWSLAB-38 · frontend · `todo` — Build sign-in and account controls
+#### YWSLAB-38 · frontend · `done` — Build sign-in and account controls
 
 Implement branded Telegram entry, canceled/error/retry states, account menu and sign-out; responsive and keyboard usable.
 
-### YWSLAB-18 · story · `backlog` — Enforce methodologist whitelist
+### YWSLAB-18 · story · `done` — Enforce methodologist whitelist
 
 Restrict progress reads and writes in API and UI; provide controlled whitelist administration and an audit trail for access changes.
 
 Links: blocks YWSLAB-25
 
-#### YWSLAB-39 · backend · `todo` — Implement whitelist grants and server authorization
+#### YWSLAB-39 · backend · `done` — Implement whitelist grants and server authorization
 
 Persist grants/revocations with audit actor/time; enforce role on every progress read/write and return non-disclosing failures; revoked user loses access on next request.
 
-#### YWSLAB-40 · test · `todo` — Test role and ownership boundaries
+#### YWSLAB-40 · test · `done` — Test role and ownership boundaries
 
 Verify regular accounts cannot access progress through navigation, direct URL or API; verify plan ownership and whitelist revocation.
 

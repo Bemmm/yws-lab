@@ -21,3 +21,15 @@ npm run start        # migrate, then next start -p ${PORT:-3000}
 ```
 
 Health check: `GET /api/health`.
+
+## Telegram setup
+
+Sign-in uses Telegram's OpenID Connect flow (authorization code + PKCE).
+
+1. In Telegram open @BotFather, create a bot (or pick an existing one), then go to Bot Settings → Login Widget.
+2. Set Allowed URLs to `APP_URL` and `APP_URL/auth/callback` (for local dev use your dev origin, e.g. `http://localhost:3000`).
+3. Copy the Client ID and Client Secret into `TELEGRAM_CLIENT_ID` and `TELEGRAM_CLIENT_SECRET`.
+4. Set `APP_URL` (public origin, no trailing path) and a long random `SESSION_SECRET` (e.g. `openssl rand -base64 48`).
+5. Methodologists: list Telegram user IDs in `METHODOLOGIST_TELEGRAM_IDS` and/or E.164 phones in `METHODOLOGIST_PHONES` (comma-separated). Changes apply on the next request after redeploy.
+
+The `TELEGRAM_ISSUER`, `TELEGRAM_AUTH_URL`, `TELEGRAM_TOKEN_URL` and `TELEGRAM_JWKS_URL` overrides exist for tests only.
