@@ -89,6 +89,8 @@ Above the cards, show group-wide counts by dynamics label; mean gain from Point 
 Cards and summary must not expose score data through public pages or regular-account APIs. The same cohort can be viewed by all currently whitelisted methodologists; an authorized change by one becomes visible to others.
 
 ## 8. Student progress and history
+Visual language: "RPG skill progression, but not childish" (methodologists' brief, `specs/source/methodologists-brief-ru.md`). Every competency is a **skill bar** of 10 cells (filled cells = score, group colour: basic = teal, YWS system = violet), with `N/10` and two signed deltas underneath: change from Point 0 and change from the previous scored stage, e.g. `Режим ██████░░░░ 6/10 · +3 від точки 0 · +1 від минулого етапу`. Student cards on the cohort overview show the same bars in compact form (one per group = group level). Use the `SkillBar` and `DynamicsPill` components of the YWS Lab design system.
+
 Student page: name, cohort and starting profile with Edit action; current stage, latest complete level, Point 0 gain and dynamics. Show two groups with nine/seven competency scales in fixed order. Each scale uses 0–10, a numeric value, and signed changes. Never rely on color alone. A never-scored competency shows “Unassessed.”
 
 History shows Point 0, the cohort's selected modules in numeric order, and Final, including empty future stages. Rows: total level, group levels and all competencies. Partial-stage level cells show “K/16”; empty cells show an em dash. Competency mini-charts use a common 0–10 axis and only plot assessed stages. On a narrow screen the table can scroll horizontally while the names column stays visible.

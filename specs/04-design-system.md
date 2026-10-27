@@ -1,5 +1,8 @@
 # YWS-Lab 1.0 design system
 
+> **Superseded (27 Oct 2026).** The source of truth is the **YWS Lab** design system (Claude design-system artifact, forked from Kolo): monobank-style back-office, Onest, ink as the main action colour, YWS brand red `#D00810` as a sparing accent, teal/violet for the two competency groups, green/amber/red for dynamics. Tokens live in `design/tokens.json` once the app is bootstrapped. The methodologists gave no colour requirements; the text below is kept only for its layout, accessibility and data-visualisation rules (sections 6–9), which still apply. Its colour table, typography table and logo section do NOT apply.
+
+
 - ID: f2f31bba-28c1-4a4e-a6fd-9cf7eab3bc9c
 - Version: 1
 - Updated: 2026-10-27T09:18:52.887267Z
