@@ -1,6 +1,6 @@
 import "server-only";
 import { randomBytes, randomUUID } from "node:crypto";
-import { and, desc, eq, ilike, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gt, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import { cloneWithNewIds, newProgram, programStats, TITLE_MAX, type Program, type ProgramStats } from "@/features/builder/model";
 import { getDb } from "@/server/db/client";
 import { plan } from "@/server/db/schema";
@@ -91,12 +91,31 @@ export async function getPlan(accountId: string, id: string): Promise<OwnedPlan 
   return { program: { ...(row.document as Program), id }, version: row.version, shareToken: row.shareToken, updatedAt: row.updatedAt };
 }
 
+/** Idempotency data a client attaches to a save (see `savePlan`); validated by `parseSaveMeta`. */
+export type SaveMeta = {
+  /** Client-generated id of this save. */
+  saveId: string;
+  /** Ids of this client's earlier saves whose responses it never received (oldest first). */
+  unackedSaveIds: string[];
+};
+
 /**
- * Versioned full-document save. The conditional UPDATE is atomic: it applies only when `version` still equals
- * `expectedVersion`. A stale version is a `conflict` unless the stored content equals the incoming content
- * (a retry whose first attempt already landed), which is answered `ok` so a retry never conflicts with itself.
+ * Versioned full-document save. The conditional UPDATE is atomic and applies when either
+ *  (a) `version = expectedVersion` (normal case), or
+ *  (b) the client recognises its own write: the stored `last_save_id` is one of the client's unacknowledged save ids
+ *      and the version advanced by at most that many saves. That is the lost-response scenario (save A applied,
+ *      response lost, user edited, next save still carries A's base version). Any foreign write replaces
+ *      `last_save_id`, so (b) can never overwrite another tab's work.
+ * Otherwise a stale version is a `conflict`, unless the stored content equals the incoming content or the incoming
+ * `saveId` is the one already applied (exact replay); both are answered `ok`.
  */
-export async function savePlan(accountId: string, id: string, document: unknown, expectedVersion: number): Promise<SaveOutcome> {
+export async function savePlan(
+  accountId: string,
+  id: string,
+  document: unknown,
+  expectedVersion: number,
+  meta?: SaveMeta,
+): Promise<SaveOutcome> {
   if (!isPlanId(id)) return { status: "not_found" };
   if (!Number.isInteger(expectedVersion) || expectedVersion < 1) return { status: "invalid" };
   const checked = validatePlanDocument(document, id);
@@ -104,20 +123,37 @@ export async function savePlan(accountId: string, id: string, document: unknown,
   const doc = checked.doc;
   const db = getDb();
 
+  const unacked = meta?.unackedSaveIds ?? [];
+  const ownWrite =
+    unacked.length > 0
+      ? and(
+          inArray(plan.lastSaveId, unacked),
+          gt(plan.version, expectedVersion),
+          sql`${plan.version} - ${expectedVersion} <= ${unacked.length}`,
+        )
+      : undefined;
+
   const [updated] = await db
     .update(plan)
-    .set({ document: doc, title: doc.title, version: sql`${plan.version} + 1`, updatedAt: new Date() })
-    .where(and(owned(accountId, id), eq(plan.version, expectedVersion)))
+    .set({
+      document: doc,
+      title: doc.title,
+      version: sql`${plan.version} + 1`,
+      lastSaveId: meta?.saveId ?? null,
+      updatedAt: new Date(),
+    })
+    .where(and(owned(accountId, id), ownWrite ? or(eq(plan.version, expectedVersion), ownWrite) : eq(plan.version, expectedVersion)))
     .returning({ version: plan.version, updatedAt: plan.updatedAt });
   if (updated) return { status: "ok", ...updated };
 
   const [current] = await db
-    .select({ document: plan.document, version: plan.version, updatedAt: plan.updatedAt })
+    .select({ document: plan.document, version: plan.version, updatedAt: plan.updatedAt, lastSaveId: plan.lastSaveId })
     .from(plan)
     .where(owned(accountId, id))
     .limit(1);
   if (!current) return { status: "not_found" };
-  if (stableStringify(current.document) === stableStringify(doc)) {
+  const replay = !!meta && current.lastSaveId === meta.saveId;
+  if (replay || stableStringify(current.document) === stableStringify(doc)) {
     return { status: "ok", version: current.version, updatedAt: current.updatedAt };
   }
   return { status: "conflict", latestVersion: current.version };

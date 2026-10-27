@@ -145,6 +145,66 @@ describe("versioned saves", () => {
     expect((await svc.getPlan(A, id))!.version).toBe(2);
   });
 
+  describe("lost response (YWSLAB-69)", () => {
+    const meta = (saveId: string, ...unackedSaveIds: string[]) => ({ saveId, unackedSaveIds });
+
+    it("recognises its own applied save when the response was lost and the user edited again", async () => {
+      const { id } = await svc.createPlan(A, { title: "lost", setTitle: "S" });
+      // Save A lands (v1 -> v2) but the client never sees the response; it still believes v1.
+      expect(await svc.savePlan(A, id, docWith("edit 1"), 1, meta("save-aaaaaaaa"))).toMatchObject({ status: "ok", version: 2 });
+      // User edits again; the retry carries the stale base version and lists save A as unacknowledged.
+      const res = await svc.savePlan(A, id, docWith("edit 2"), 1, meta("save-bbbbbbbb", "save-aaaaaaaa"));
+      expect(res).toMatchObject({ status: "ok", version: 3 });
+      expect((await svc.getPlan(A, id))!.program.title).toBe("edit 2");
+    });
+
+    it("handles a chain of lost responses", async () => {
+      const { id } = await svc.createPlan(A, { title: "chain", setTitle: "S" });
+      await svc.savePlan(A, id, docWith("c1"), 1, meta("save-11111111"));
+      await svc.savePlan(A, id, docWith("c2"), 1, meta("save-22222222", "save-11111111"));
+      const res = await svc.savePlan(A, id, docWith("c3"), 1, meta("save-33333333", "save-11111111", "save-22222222"));
+      expect(res).toMatchObject({ status: "ok", version: 4 });
+    });
+
+    it("still conflicts when another tab wrote after the lost save", async () => {
+      const { id } = await svc.createPlan(A, { title: "foreign", setTitle: "S" });
+      await svc.savePlan(A, id, docWith("mine"), 1, meta("save-aaaaaaaa")); // v2, response lost
+      await svc.savePlan(A, id, docWith("other tab"), 2, meta("save-zzzzzzzz")); // v3 by another tab
+      const res = await svc.savePlan(A, id, docWith("mine again"), 1, meta("save-bbbbbbbb", "save-aaaaaaaa"));
+      expect(res).toEqual({ status: "conflict", latestVersion: 3 });
+      expect((await svc.getPlan(A, id))!.program.title).toBe("other tab");
+    });
+
+    it("an unknown save id does not unlock a stale version", async () => {
+      const { id } = await svc.createPlan(A, { title: "unknown", setTitle: "S" });
+      await svc.savePlan(A, id, docWith("t1"), 1, meta("save-aaaaaaaa"));
+      const res = await svc.savePlan(A, id, docWith("t2"), 1, meta("save-bbbbbbbb", "save-nonexist"));
+      expect(res).toEqual({ status: "conflict", latestVersion: 2 });
+    });
+
+    it("cannot skip more versions than it has unacknowledged saves", async () => {
+      const { id } = await svc.createPlan(A, { title: "gap", setTitle: "S" });
+      await svc.savePlan(A, id, docWith("a"), 1, meta("save-aaaaaaaa")); // v2
+      await svc.savePlan(A, id, docWith("other"), 2, meta("save-zzzzzzzz")); // v3
+      await svc.savePlan(A, id, docWith("a2"), 3, meta("save-aaaaaaa2")); // v4, same client id space but not listed
+      const res = await svc.savePlan(A, id, docWith("late"), 1, meta("save-bbbbbbbb", "save-aaaaaaa2"));
+      expect(res).toEqual({ status: "conflict", latestVersion: 4 });
+    });
+
+    it("an exact replay of the applied save id is ok and does not bump the version", async () => {
+      const { id } = await svc.createPlan(A, { title: "replay", setTitle: "S" });
+      await svc.savePlan(A, id, docWith("r"), 1, meta("save-aaaaaaaa"));
+      const again = await svc.savePlan(A, id, docWith("r but edited"), 1, meta("save-aaaaaaaa"));
+      expect(again).toMatchObject({ status: "ok", version: 2 });
+    });
+
+    it("another account cannot use save ids to touch the plan", async () => {
+      const { id } = await svc.createPlan(A, { title: "owned", setTitle: "S" });
+      await svc.savePlan(A, id, docWith("a"), 1, meta("save-aaaaaaaa"));
+      expect(await svc.savePlan(B, id, docWith("evil"), 1, meta("save-bbbbbbbb", "save-aaaaaaaa"))).toEqual({ status: "not_found" });
+    });
+  });
+
   it("rejects invalid documents (oversize / limits) with `invalid` and stores nothing", async () => {
     const { id } = await svc.createPlan(A, { title: "validation", setTitle: "S" });
     const tooManySlots = docWith("x", {

@@ -1,0 +1,1 @@
+ALTER TABLE "plan" ADD COLUMN "last_save_id" text;

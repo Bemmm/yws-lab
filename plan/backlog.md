@@ -308,11 +308,11 @@ After final UI validation, remove the local references/ screenshots as requested
 
 ## Follow-ups (from reviews)
 
-### YWSLAB-69 · task · `todo` — Builder: avoid false save conflicts after a lost response
+### YWSLAB-69 · task · `done` — Builder: avoid false save conflicts after a lost response
 If a save response is lost after the server applied it and the user edits again, the retry sends a stale version against its own save. Track the last server-acknowledged version per client-generated save id (idempotency key) so the client can recognise its own write.
 
-### YWSLAB-70 · task · `todo` — Builder: reliable flush on page hide
+### YWSLAB-70 · task · `done` — Builder: reliable flush on page hide
 The `pagehide` flush calls a server action without `keepalive`; switch to a `fetch(..., { keepalive: true })` route or `navigator.sendBeacon` for the final flush.
 
-### YWSLAB-71 · task · `todo` — Share page throttling key
+### YWSLAB-71 · task · `done` — Share page throttling key
 Use Render's client IP header (`true-client-ip` / first `x-forwarded-for` hop set by Render) for the share-token rate limit instead of a spoofable/shared fallback.

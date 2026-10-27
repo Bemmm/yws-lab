@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import { PreviewClient } from "@/features/builder/preview/preview-client";
+import { shareThrottleKey } from "@/server/plans/client-ip";
 import { allow } from "@/server/plans/rate-limit";
 import { getSharedPlan } from "@/server/plans/service";
 
@@ -12,9 +13,9 @@ export const dynamic = "force-dynamic";
 // Once per request, so metadata + page do not double-count against the rate limit.
 const lookup = cache(async (token: string) => {
   const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
   // A throttled caller gets the same neutral 404 as an invalid token: no signal about token validity.
-  if (!allow(`share:${ip}`, 60, 60_000)) return null;
+  // Key: client IP from Render's headers, else the token itself (see client-ip.ts).
+  if (!allow(shareThrottleKey(h, token), 60, 60_000)) return null;
   return getSharedPlan(token);
 });
 
