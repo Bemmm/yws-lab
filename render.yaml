@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: yws-lab
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: TELEGRAM_CLIENT_ID
+        sync: false
+      - key: TELEGRAM_CLIENT_SECRET
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: METHODOLOGIST_TELEGRAM_IDS
+        sync: false
+      - key: METHODOLOGIST_PHONES
+        sync: false

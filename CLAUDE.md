@@ -12,7 +12,7 @@ Internal web app for YWS methodologists and teachers: **training plan builder** 
 ## Stack (decided — do not change without a spec update)
 
 - Next.js 16 (App Router, server actions + route handlers), React 19, TypeScript strict.
-- Tailwind CSS 4 with the design tokens as CSS variables; font Onest (Google Fonts).
+- Tailwind CSS 4 with the design tokens as CSS variables; font Onest (self-hosted in `src/app/fonts`).
 - Postgres: Neon in production, local Postgres 16 in dev/CI. Drizzle ORM + drizzle-kit SQL migrations in `drizzle/`. Migrations run on app start (`npm run start`).
 - Auth: Telegram OIDC (authorization code + PKCE), ID token verified with `jose` against Telegram JWKS. Sessions: opaque random token in an HttpOnly Secure SameSite=Lax cookie, hashed in the `session` table.
 - Methodologist whitelist: env `METHODOLOGIST_TELEGRAM_IDS` and `METHODOLOGIST_PHONES` (comma-separated). Checked on the server on every progress request.

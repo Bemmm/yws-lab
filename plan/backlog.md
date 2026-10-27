@@ -60,15 +60,15 @@ Choose stack from requirements; initialize repo, config, migrations, local devel
 
 Links: blocks YWSLAB-17; blocks YWSLAB-19
 
-#### YWSLAB-35 · backend · `todo` — Define app architecture and bootstrap repository
+#### YWSLAB-35 · backend · `done` — Define app architecture and bootstrap repository
 
 Choose stack from approved specs, create app structure, env schema and migration setup; document local commands. Acceptance: clean checkout runs locally with no secrets committed.
 
-#### YWSLAB-36 · test · `todo` — Set up CI and environment checks
+#### YWSLAB-36 · test · `done` — Set up CI and environment checks
 
 Clean checkout installs and runs checks; CI runs lint/typecheck, unit and end-to-end gates with test data; environment variables are documented without secrets.
 
-#### YWSLAB-67 · design · `todo` — Prepare selected YWS-Lab logo asset
+#### YWSLAB-67 · design · `done` — Prepare selected YWS-Lab logo asset
 
 Use the red-lab wordmark source; export optimized production sizes, inspect transparency and legibility on dark navigation/light sign-in, and choose a simplified favicon-sized mark.
 
@@ -104,11 +104,11 @@ Store accounts, roles, plans, courses, shared cohorts, selected cohort modules, 
 
 Links: blocks YWSLAB-21; blocks YWSLAB-25
 
-#### YWSLAB-41 · backend · `todo` — Migrate account, plan and pose schemas
+#### YWSLAB-41 · backend · `done` — Migrate account, plan and pose schemas
 
 Create versioned tables/constraints for account, plan, sections, exercises, pose catalog, share tokens and audit metadata; migration works from empty database.
 
-#### YWSLAB-42 · backend · `todo` — Migrate cohort, module and assessment schemas
+#### YWSLAB-42 · backend · `done` — Migrate cohort, module and assessment schemas
 
 Create shared course/cohort, selected module, teacher-student roster, enrollment, assessment and revision tables; prevent duplicate modules/enrollments and cross-cohort joins.
 

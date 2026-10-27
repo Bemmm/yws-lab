@@ -1,0 +1,108 @@
+/* Generated from the YWS Lab design tokens (yws-ds/project/tokens.json). Edit tokens there, then regenerate. */
+
+:root {
+  --bg-page: #F3F4F7;
+  --bg-card: #FFFFFF;
+  --ink: #0B0B0F;
+  --ink-2: #3D414C;
+  --ink-muted: #5E6270;
+  --ink-on-dark-muted: #A3A6B0;
+  --line: #EEEFF2;
+  --toggle-off: #C9CCD4;
+  --brand-red: #D00810;
+  --brand-red-700: #A3060C;
+  --focus: #1D4ED8;
+  --sand: #F4EEE6;
+  --sand-ink: #6B4A1F;
+  --basic: #0C6B70;
+  --basic-soft: #D9F3F5;
+  --system: #5A48B8;
+  --system-soft: #ECE8FF;
+  --mint: #DFF6EA;
+  --mint-ink: #146C43;
+  --amber: #FFF1D6;
+  --amber-ink: #8A5300;
+  --red-soft: #FFE4E1;
+  --red-ink: #A3241B;
+  --green-500: #5EE0A0;
+  --peach: #FFE9DE;
+  --white: #FFFFFF;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --tap-min: 44px;
+  --button-h: 48px;
+  --button-h-lg: 52px;
+  --sidebar-w: 248px;
+  --ring-avatar: 0 0 0 2px #FFFFFF;
+}
+
+@theme static inline {
+  --color-bg-page: var(--bg-page);
+  --color-bg-card: var(--bg-card);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-on-dark-muted: var(--ink-on-dark-muted);
+  --color-line: var(--line);
+  --color-toggle-off: var(--toggle-off);
+  --color-brand-red: var(--brand-red);
+  --color-brand-red-700: var(--brand-red-700);
+  --color-focus: var(--focus);
+  --color-sand: var(--sand);
+  --color-sand-ink: var(--sand-ink);
+  --color-basic: var(--basic);
+  --color-basic-soft: var(--basic-soft);
+  --color-system: var(--system);
+  --color-system-soft: var(--system-soft);
+  --color-mint: var(--mint);
+  --color-mint-ink: var(--mint-ink);
+  --color-amber: var(--amber);
+  --color-amber-ink: var(--amber-ink);
+  --color-red-soft: var(--red-soft);
+  --color-red-ink: var(--red-ink);
+  --color-green-500: var(--green-500);
+  --color-peach: var(--peach);
+  --color-white: var(--white);
+}
+
+@theme static {
+  --font-sans: var(--font-onest), Onest, system-ui, sans-serif;
+  --radius-sm: 12px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-2xl: 32px;
+  --radius-pill: 999px;
+  --shadow-float: 0 24px 48px -24px rgba(11,11,15,0.45);
+  --shadow-drawer: -30px 0 60px -30px rgba(11,11,15,0.5);
+  --text-h1: 34px;
+  --text-h1--line-height: 1.15;
+  --text-h1--font-weight: 800;
+  --text-h1--letter-spacing: -0.8px;
+  --text-stat: 30px;
+  --text-stat--line-height: 1.1;
+  --text-stat--font-weight: 800;
+  --text-h2: 20px;
+  --text-h2--line-height: 1.3;
+  --text-h2--font-weight: 800;
+  --text-h3: 18px;
+  --text-h3--line-height: 1.3;
+  --text-h3--font-weight: 800;
+  --text-body: 15px;
+  --text-body--line-height: 1.5;
+  --text-body--font-weight: 500;
+  --text-body-strong: 15px;
+  --text-body-strong--line-height: 1.5;
+  --text-body-strong--font-weight: 700;
+  --text-caption: 13px;
+  --text-caption--line-height: 1.4;
+  --text-caption--font-weight: 500;
+  --text-micro: 12px;
+  --text-micro--line-height: 1.3;
+  --text-micro--font-weight: 700;
+}
