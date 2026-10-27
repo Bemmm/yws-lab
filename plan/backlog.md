@@ -316,3 +316,6 @@ The `pagehide` flush calls a server action without `keepalive`; switch to a `fet
 
 ### YWSLAB-71 · task · `done` — Share page throttling key
 Use Render's client IP header (`true-client-ip` / first `x-forwarded-for` hop set by Render) for the share-token rate limit instead of a spoofable/shared fallback.
+
+### YWSLAB-72 · story · `todo` — Curator observation note per assessment stage
+From the methodologists' prototype walkthrough (27 Oct): each stage (Point 0, module, Final) has a free-text "Наблюдение куратора". Store one note per enrollment+stage (≤2,000 chars), edit it on the assessment form, save atomically with the stage's scores, show it on the student page per stage. A note alone does not make a stage "scored" for availability rules. Audit keeps the previous note.
